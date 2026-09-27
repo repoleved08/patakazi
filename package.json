@@ -1,0 +1,46 @@
+{
+  "name": "jobboard",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "nuxt build",
+    "dev": "nuxt dev",
+    "preview": "nuxt preview",
+    "postinstall": "nuxt prepare",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "typecheck": "nuxt typecheck",
+    "check": "pnpm run lint && pnpm run typecheck",
+    "db:start": "npx supabase start",
+    "db:push": "npx supabase db push",
+    "db:reset": "npx supabase db reset",
+    "db:diff": "npx supabase db diff --file",
+    "db:status": "npx supabase migration list",
+    "db:types": "npx supabase gen types typescript --local > shared/types/database.ts"
+  },
+  "dependencies": {
+    "@iconify-json/lucide": "^1.2.134",
+    "@iconify-json/simple-icons": "^1.2.96",
+    "@nuxt/content": "3.16.1",
+    "@nuxt/ui": "^4.11.1",
+    "@nuxtjs/seo": "5.3.16",
+    "@nuxtjs/sitemap": "^8.5.1",
+    "@nuxtjs/supabase": "^2.0.10",
+    "@supabase/supabase-js": "^2.117.2",
+    "better-sqlite3": "^13.0.3",
+    "nuxt": "^4.5.2",
+    "nuxt-ai-ready": "2.4.0",
+    "tailwindcss": "^4.3.3",
+    "zod": "^4.6.5"
+  },
+  "devDependencies": {
+    "@nuxt/eslint": "^1.17.0",
+    "@nuxtjs/mcp-toolkit": "^0.21.0",
+    "@takumi-rs/core": "^2.14.0",
+    "eslint": "^10.11.0",
+    "eslint-plugin-better-tailwindcss": "^4.7.0",
+    "typescript": "^6.0.3",
+    "vue-tsc": "^3.3.11"
+  },
+  "packageManager": "pnpm@12.5.1"
+}
