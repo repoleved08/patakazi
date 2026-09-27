@@ -65,66 +65,80 @@ const links = [
 
       <UButton
         v-if="!isAuthenticated"
-        class="md:hidden"
-        icon="i-lucide-menu"
-        color="neutral"
-        variant="ghost"
-        aria-label="Menu"
-        @click="mobileOpen = true"
-      />
-
-      <UButton
-        v-else
         to="/login"
         label="Sign in"
         color="neutral"
         variant="ghost"
         size="sm"
+        class="hidden md:inline-flex"
+      />
+      <UButton
+        class="md:hidden"
+        icon="i-lucide-menu"
+        color="neutral"
+        variant="ghost"
+        aria-label="Menu"
+        @click="mobileOpen = !mobileOpen"
       />
     </template>
   </UHeader>
 
-  <USheet
-    v-model:open="mobileOpen"
-    title="Menu"
-    side="right"
+  <div
+    v-if="mobileOpen"
+    class="fixed inset-0 z-50 bg-black/40 md:hidden"
+    @click="mobileOpen = false"
   >
-    <UNavigationMenu
-      :items="links"
-      vertical
-      class="mt-4"
-    />
     <div
-      v-if="isAuthenticated"
-      class="mt-4 space-y-2"
+      class="absolute right-0 top-0 h-full w-72 bg-white shadow-2xl p-6"
+      @click.stop
     >
-      <UButton
-        to="/dashboard"
-        block
-        label="Dashboard"
+      <div class="flex items-center justify-between mb-6">
+        <span class="font-bold">Menu</span>
+        <UButton
+          icon="i-lucide-x"
+          variant="ghost"
+          color="neutral"
+          size="sm"
+          aria-label="Close"
+          @click="mobileOpen = false"
+        />
+      </div>
+      <UNavigationMenu
+        :items="links"
+        vertical
       />
-      <UButton
-        to="/dashboard/saved"
-        block
-        label="Saved jobs"
-      />
-      <UButton
-        block
-        color="neutral"
-        variant="soft"
-        label="Sign out"
-        @click="logout"
-      />
+      <div
+        v-if="isAuthenticated"
+        class="mt-6 space-y-2"
+      >
+        <UButton
+          to="/dashboard"
+          block
+          label="Dashboard"
+        />
+        <UButton
+          to="/dashboard/saved"
+          block
+          label="Saved jobs"
+        />
+        <UButton
+          block
+          color="neutral"
+          variant="soft"
+          label="Sign out"
+          @click="logout"
+        />
+      </div>
+      <div
+        v-else
+        class="mt-6"
+      >
+        <UButton
+          to="/login"
+          block
+          label="Sign in"
+        />
+      </div>
     </div>
-    <div
-      v-else
-      class="mt-4"
-    >
-      <UButton
-        to="/login"
-        block
-        label="Sign in"
-      />
-    </div>
-  </USheet>
+  </div>
 </template>
