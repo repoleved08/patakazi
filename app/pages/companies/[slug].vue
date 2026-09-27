@@ -66,7 +66,7 @@ useSeoMeta({
     </header>
 
     <div
-      v-if="company!.services || company!.working_hours"
+      v-if="company!.services || company!.workingHours"
       class="mt-6 mb-2 rounded-xl bg-default/50 p-4 text-sm"
     >
       <div
@@ -78,10 +78,10 @@ useSeoMeta({
           {{ company!.services }}
         </p>
       </div>
-      <div v-if="company!.working_hours">
+      <div v-if="company!.workingHours">
         <strong class="text-xs uppercase tracking-wide text-muted">Working hours</strong>
         <p class="mt-1 whitespace-pre-wrap">
-          {{ company!.working_hours }}
+          {{ company!.workingHours }}
         </p>
       </div>
     </div>
@@ -113,7 +113,7 @@ useSeoMeta({
       </div>
 
       <aside class="lg:sticky lg:top-24 lg:self-start">
-        <UCard v-if="company!.description || company!.services || company!.working_hours">
+        <UCard v-if="company!.description || company!.services || company!.workingHours">
           <h2 class="text-sm font-semibold">
             About
           </h2>
@@ -135,14 +135,14 @@ useSeoMeta({
             </p>
           </div>
           <div
-            v-if="company!.working_hours"
+            v-if="company!.workingHours"
             class="mt-3 text-sm"
           >
             <h3 class="font-medium text-xs uppercase tracking-wide text-muted">
               Working hours
             </h3>
             <p class="whitespace-pre-wrap">
-              {{ company!.working_hours }}
+              {{ company!.workingHours }}
             </p>
           </div>
         </UCard>

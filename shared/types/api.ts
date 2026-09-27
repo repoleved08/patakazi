@@ -32,6 +32,8 @@ export interface Company extends CompanySummary {
   size: CompanySize | ''
   founded: number
   openRoles: number
+  services?: string
+  workingHours?: string
 }
 
 export interface Salary {

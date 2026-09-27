@@ -23,8 +23,7 @@ useSeoMeta({
   title: 'Patakazi — Agent-readable job listings',
   description: 'Public job listings with salary transparency, company profiles, and structured data for AI agents and people.',
   ogTitle: 'Patakazi — Careers for people and agents',
-  title: 'Find your next role',
-  description: 'A job board that publishes salary ranges, and is readable by both people and AI agents.'
+  ogDescription: 'Browse open roles with salary ranges, company profiles, and structured job data readable by AI agents.'
 })
 </script>
 

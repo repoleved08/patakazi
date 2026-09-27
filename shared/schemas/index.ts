@@ -120,7 +120,9 @@ const updateCompanyShape = z.object({
   industry: z.string().trim().max(80).optional(),
   size: z.enum(COMPANY_SIZES).or(z.literal('')).optional(),
   founded: z.coerce.number().int().min(1800).max(2100).or(z.literal(0)).optional(),
-  location: z.string().trim().max(120).optional()
+  location: z.string().trim().max(120).optional(),
+  services: z.string().trim().max(5000).default('').optional(),
+  workingHours: z.string().trim().max(500).default('').optional()
 })
 
 export const updateCompanySchema = updateCompanyShape.refine(
