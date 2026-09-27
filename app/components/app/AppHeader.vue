@@ -1,8 +1,8 @@
 <script setup lang="ts">
 const { isAuthenticated, user, logout } = useAuth()
 
-  const mobileOpen = ref(false)
-  const links = [
+const mobileOpen = ref(false)
+const links = [
   { label: 'Find jobs', to: '/jobs' },
   { label: 'Companies', to: '/companies' },
   { label: 'Blog', to: '/blog' }
@@ -64,6 +64,7 @@ const { isAuthenticated, user, logout } = useAuth()
       </template>
 
       <UButton
+        v-if="!isAuthenticated"
         class="md:hidden"
         icon="i-lucide-menu"
         color="neutral"
@@ -83,15 +84,47 @@ const { isAuthenticated, user, logout } = useAuth()
     </template>
   </UHeader>
 
-  <USheet v-model:open="mobileOpen" title="Menu" side="right">
-    <UNavigationMenu :items="links" vertical class="mt-4" />
-    <div v-if="isAuthenticated" class="mt-4 space-y-2">
-      <UButton to="/dashboard" block label="Dashboard" />
-      <UButton to="/dashboard/saved" block label="Saved jobs" />
-      <UButton block color="neutral" variant="soft" label="Sign out" @click="logout" />
+  <USheet
+    v-model:open="mobileOpen"
+    title="Menu"
+    side="right"
+  >
+    <UNavigationMenu
+      :items="links"
+      vertical
+      class="mt-4"
+    />
+    <div
+      v-if="isAuthenticated"
+      class="mt-4 space-y-2"
+    >
+      <UButton
+        to="/dashboard"
+        block
+        label="Dashboard"
+      />
+      <UButton
+        to="/dashboard/saved"
+        block
+        label="Saved jobs"
+      />
+      <UButton
+        block
+        color="neutral"
+        variant="soft"
+        label="Sign out"
+        @click="logout"
+      />
     </div>
-    <div v-else class="mt-4">
-      <UButton to="/login" block label="Sign in" />
+    <div
+      v-else
+      class="mt-4"
+    >
+      <UButton
+        to="/login"
+        block
+        label="Sign in"
+      />
     </div>
   </USheet>
 </template>

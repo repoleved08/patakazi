@@ -35,8 +35,8 @@ const form = reactive({
   size: (company.value?.size || undefined) as CompanySize | undefined,
   founded: company.value?.founded ?? 0,
   description: company.value?.description ?? '',
-  services: (company.value as any)?.services ?? '',
-  workingHours: (company.value as any)?.workingHours ?? ''
+  services: (company.value as { services?: string, workingHours?: string })?.services ?? '',
+  workingHours: (company.value as { services?: string, workingHours?: string })?.workingHours ?? ''
 })
 
 async function submit() {
@@ -167,11 +167,20 @@ useSeoMeta({ title: () => `Edit ${company.value?.name ?? 'company'}` })
             />
           </UFormField>
 
-          <UFormField label="Services / Focus" hint="What the company does — clients, products, sectors">
-            <UTextarea v-model="form.services" :rows="3" />
+          <UFormField
+            label="Services / Focus"
+            hint="What the company does — clients, products, sectors"
+          >
+            <UTextarea
+              v-model="form.services"
+              :rows="3"
+            />
           </UFormField>
 
-          <UFormField label="Working hours" hint="Typical schedule or time zones">
+          <UFormField
+            label="Working hours"
+            hint="Typical schedule or time zones"
+          >
             <UInput v-model="form.workingHours" />
           </UFormField>
 
