@@ -34,7 +34,9 @@ const form = reactive({
   location: company.value?.location ?? '',
   size: (company.value?.size || undefined) as CompanySize | undefined,
   founded: company.value?.founded ?? 0,
-  description: company.value?.description ?? ''
+  description: company.value?.description ?? '',
+  services: (company.value as any)?.services ?? '',
+  workingHours: (company.value as any)?.workingHours ?? ''
 })
 
 async function submit() {
@@ -50,7 +52,9 @@ async function submit() {
       location: form.location,
       size: form.size ?? '',
       founded: form.founded,
-      description: form.description
+      description: form.description,
+      services: form.services ?? '',
+      workingHours: form.workingHours ?? ''
     }
     await update(company.value.id, payload)
     notice.value = 'Saved.'
@@ -161,6 +165,14 @@ useSeoMeta({ title: () => `Edit ${company.value?.name ?? 'company'}` })
               placeholder="Berlin, Germany"
               class="w-full"
             />
+          </UFormField>
+
+          <UFormField label="Services / Focus" hint="What the company does — clients, products, sectors">
+            <UTextarea v-model="form.services" :rows="3" />
+          </UFormField>
+
+          <UFormField label="Working hours" hint="Typical schedule or time zones">
+            <UInput v-model="form.workingHours" />
           </UFormField>
 
           <UFormField label="Industry">

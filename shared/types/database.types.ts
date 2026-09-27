@@ -35,6 +35,8 @@ export type Database = {
           id: string
           industry: string
           location: string
+          services: string
+          working_hours: string
           logo_id: string
           name: string
           owner_id: string | null

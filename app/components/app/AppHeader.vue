@@ -1,7 +1,8 @@
 <script setup lang="ts">
 const { isAuthenticated, user, logout } = useAuth()
 
-const links = [
+  const mobileOpen = ref(false)
+  const links = [
   { label: 'Find jobs', to: '/jobs' },
   { label: 'Companies', to: '/companies' },
   { label: 'Blog', to: '/blog' }
@@ -63,6 +64,15 @@ const links = [
       </template>
 
       <UButton
+        class="md:hidden"
+        icon="i-lucide-menu"
+        color="neutral"
+        variant="ghost"
+        aria-label="Menu"
+        @click="mobileOpen = true"
+      />
+
+      <UButton
         v-else
         to="/login"
         label="Sign in"
@@ -72,4 +82,16 @@ const links = [
       />
     </template>
   </UHeader>
+
+  <USheet v-model:open="mobileOpen" title="Menu" side="right">
+    <UNavigationMenu :items="links" vertical class="mt-4" />
+    <div v-if="isAuthenticated" class="mt-4 space-y-2">
+      <UButton to="/dashboard" block label="Dashboard" />
+      <UButton to="/dashboard/saved" block label="Saved jobs" />
+      <UButton block color="neutral" variant="soft" label="Sign out" @click="logout" />
+    </div>
+    <div v-else class="mt-4">
+      <UButton to="/login" block label="Sign in" />
+    </div>
+  </USheet>
 </template>

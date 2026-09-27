@@ -29,6 +29,8 @@ export const jobQuerySchema = z.object({
   q: z.string().trim().min(1).max(200).optional(),
   companyId: z.string().trim().optional(),
   location: z.string().trim().max(120).optional(),
+  services: z.string().trim().max(5000).default('').optional(),
+  workingHours: z.string().trim().max(500).default('').optional(),
   workplaceType: csvArray(WORKPLACE_TYPES),
   employmentType: csvArray(EMPLOYMENT_TYPES),
   seniority: csvArray(SENIORITY_LEVELS),
@@ -147,6 +149,8 @@ export const updateProfileSchema = z.object({
   headline: z.string().trim().max(160).optional(),
   summary: z.string().trim().max(5_000).optional(),
   location: z.string().trim().max(120).optional(),
+  services: z.string().trim().max(5000).default('').optional(),
+  workingHours: z.string().trim().max(500).default('').optional(),
   skills: z.array(z.string().trim().min(1).max(40)).max(40).optional(),
   // A storage object key in the private `resumes` bucket, set by the upload
   // flow rather than typed by hand.

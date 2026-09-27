@@ -32,6 +32,8 @@ export interface CompanyRow extends BaseRow {
   size: CompanySize | ''
   founded: number
   location: string
+  services: string
+  working_hours: string
   logo_id: string
   /** auth.users id of the account that claimed this company. */
   owner_id: string | null

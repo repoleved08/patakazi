@@ -21,7 +21,10 @@ onMounted(() => {
 
 useSeoMeta({
   title: `${posting.title} at ${posting.company.name}`,
-  description: excerpt(posting.description, 160),
+  description: excerpt(
+    (posting.description || '').replace(/\n/g, ' ').slice(0, 160),
+    160
+  ) + ' — Agent-readable job listing with salary, skills, and company details.',
   ogTitle: `${posting.title} at ${posting.company.name}`,
   ogDescription: excerpt(posting.description, 160),
   ogType: 'article'
@@ -79,6 +82,11 @@ useHead({
 
 <template>
   <UContainer class="py-10">
+    <!-- Agent / SEO: structured description emphasizes what the role involves -->
+    <section aria-label="What you will do" v-if="posting.description" class="prose prose-default max-w-none">
+      <h2 class="text-xl font-semibold mb-2">What you will do</h2>
+      <div class="job-description text-sm leading-relaxed whitespace-pre-wrap">{{ posting.description }}</div>
+    </section>
     <div class="grid gap-10 lg:grid-cols-[minmax(0,1fr)_20rem]">
       <article>
         <header class="border-b border-default pb-6">

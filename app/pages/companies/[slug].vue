@@ -15,7 +15,10 @@ useSeoMeta({
   description: excerpt(
     company.value.description || `${company.value.name} is hiring on this board.`,
     160
-  )
+  ),
+  ogTitle: `${company.value.name} — open roles`,
+  ogDescription: company.value.description || `Browse open roles at ${company.value.name}.`,
+  twitterCard: 'summary_large_image'
 })
 </script>
 
@@ -62,6 +65,17 @@ useSeoMeta({
       </div>
     </header>
 
+    <div v-if="company!.services || company!.working_hours" class="mt-6 mb-2 rounded-xl bg-default/50 p-4 text-sm">
+      <div v-if="company!.services" class="mb-2">
+        <strong class="text-xs uppercase tracking-wide text-muted">Services & focus</strong>
+        <p class="mt-1 whitespace-pre-wrap">{{ company!.services }}</p>
+      </div>
+      <div v-if="company!.working_hours">
+        <strong class="text-xs uppercase tracking-wide text-muted">Working hours</strong>
+        <p class="mt-1 whitespace-pre-wrap">{{ company!.working_hours }}</p>
+      </div>
+    </div>
+
     <div class="mt-8 grid gap-10 lg:grid-cols-[minmax(0,1fr)_20rem]">
       <div>
         <h2 class="mb-4 text-xl font-semibold">
@@ -89,12 +103,20 @@ useSeoMeta({
       </div>
 
       <aside class="lg:sticky lg:top-24 lg:self-start">
-        <UCard v-if="company!.description">
+        <UCard v-if="company!.description || company!.services || company!.working_hours">
           <h2 class="text-sm font-semibold">
             About
           </h2>
-          <div class="job-description mt-2 text-sm">
+          <div v-if="company!.description" class="job-description mt-2 text-sm">
             <MDC :value="company!.description" />
+          </div>
+          <div v-if="company!.services" class="mt-3 text-sm">
+            <h3 class="font-medium text-xs uppercase tracking-wide text-muted">Services</h3>
+            <p class="whitespace-pre-wrap">{{ company!.services }}</p>
+          </div>
+          <div v-if="company!.working_hours" class="mt-3 text-sm">
+            <h3 class="font-medium text-xs uppercase tracking-wide text-muted">Working hours</h3>
+            <p class="whitespace-pre-wrap">{{ company!.working_hours }}</p>
           </div>
         </UCard>
 
