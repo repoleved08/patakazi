@@ -1,5 +1,5 @@
 import type { CreateJobInput, UpdateJobInput } from '#shared/schemas'
-import type { Job, JobQuery, JobStats, Paginated } from '#shared/types/api'
+import type { Job, JobQuery, JobStats, JobSummary, Paginated } from '#shared/types/api'
 
 /**
  * Client-side access to the jobs API.
@@ -31,18 +31,33 @@ function toQuery(query: JobQuery = {}): Record<string, string> {
   assign('currency', query.currency)
   assign('status', query.status)
   assign('sort', query.sort)
+  assign('fields', query.fields)
   assign('page', query.page)
   assign('perPage', query.perPage)
 
   return params
 }
 
-export function useJobs(query: MaybeRef<JobQuery> = {}) {
-  const params = computed(() => toQuery(toValue(query)))
+/**
+ * Public job search.
+ *
+ * Defaults to `fields=summary` because every current caller renders cards, and
+ * the fields a card does not draw — chiefly the description body — are several
+ * kilobytes per listing and are serialised into the SSR payload either way.
+ * Pass `fields: 'full'` to get the complete listing back; the return type
+ * follows the flag rather than lying about what arrived.
+ */
+export function useJobs<T extends 'full' | 'summary' = 'summary'>(
+  query: MaybeRef<JobQuery & { fields?: T }> = {}
+) {
+  const params = computed(() => {
+    const serialised = toQuery(toValue(query))
+    return { ...serialised, fields: serialised.fields ?? 'summary' }
+  })
 
   return useAsyncData(
     () => `jobs:${JSON.stringify(params.value)}`,
-    () => $fetch<Paginated<Job>>('/api/jobs', { query: params.value }),
+    () => $fetch<Paginated<T extends 'summary' ? JobSummary : Job>>('/api/jobs', { query: params.value }),
     { watch: [params] }
   )
 }

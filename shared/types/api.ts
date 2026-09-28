@@ -112,6 +112,8 @@ export interface JobQuery {
   currency?: string
   status?: JobStatus | JobStatus[]
   sort?: JobSortField
+  /** `summary` omits the description and employer contact fields. See jobQuerySchema. */
+  fields?: 'full' | 'summary'
   page?: number
   perPage?: number
 }

@@ -1,3 +1,4 @@
+import { definePublicGet } from '../utils/publicCache'
 import { useJobService } from '../services/job.service'
 import { excerpt } from '#shared/utils/format'
 
@@ -10,7 +11,7 @@ import { excerpt } from '#shared/utils/format'
  * paginated `/api/jobs`, because the response stays inside a typical context
  * window.
  */
-export default defineEventHandler(async (event) => {
+export default definePublicGet('api-search', async (event) => {
   const query = getQuery(event)
   const term = typeof query.q === 'string' ? query.q.trim() : ''
   const limit = Math.min(Number(query.limit) || 10, 25)
@@ -52,4 +53,4 @@ export default defineEventHandler(async (event) => {
       summary: excerpt(job.description, 200)
     }))
   }
-})
+}, { maxAge: 300 })

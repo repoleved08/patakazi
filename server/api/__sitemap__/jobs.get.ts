@@ -7,7 +7,7 @@ import { useJobService } from '../../services/job.service'
  * sitemap doubles as the canonical list of what exists.
  */
 export default defineSitemapEventHandler(async (event) => {
-  const { data } = await useJobService(event).listPublic({ page: 1, perPage: 50, sort: 'newest' })
+  const { data } = await useJobService(event).listPublic({ page: 1, perPage: 50, sort: 'newest', fields: 'full' })
 
   return data.map(job => ({
     loc: `/jobs/${job.slug}`,

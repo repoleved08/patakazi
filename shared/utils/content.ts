@@ -1,8 +1,9 @@
 /**
- * Helpers for rendering the `posts` collection.
+ * Helpers for reading a Nuxt Content document body.
  *
- * Shared by the blog index and the post page so reading time is computed
- * identically in both places.
+ * Shared between the app (reading time on the blog pages) and the server (the
+ * markdown served to agents), so the text extraction and word count cannot
+ * drift between the two.
  */
 
 /** Average adult reading speed for technical prose, in words per minute. */

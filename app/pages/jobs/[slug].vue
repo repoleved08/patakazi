@@ -19,14 +19,14 @@ onMounted(() => {
   $fetch(`/api/jobs/${slug.value}/view`, { method: 'POST' }).catch(() => {})
 })
 
+// No `ogImage` here: generating one per listing needs a server-side image
+// renderer, which this project does not have. `@nuxtjs/seo` falls back to the
+// site default rather than pointing at an endpoint that does not exist.
 useSeoMeta({
   title: `${posting.title} at ${posting.company.name}`,
-  description: excerpt(
-    (posting.description || '').replace(/\n/g, ' ').slice(0, 160),
-    160
-  ) + ' — Agent-readable job listing with salary, skills, and company details.',
+  description: jobMetaDescription(posting),
   ogTitle: `${posting.title} at ${posting.company.name}`,
-  ogDescription: excerpt(posting.description, 160),
+  ogDescription: jobMetaDescription(posting),
   ogType: 'article'
 })
 
@@ -224,6 +224,18 @@ useHead({
               color="neutral"
               block
               @click="toggle(posting.id)"
+            />
+            <JobCopyAsMarkdown :job="posting" />
+            <UButton
+              :to="`${posting.slug}.md`"
+              :external="true"
+              target="_blank"
+              rel="noopener"
+              label="View raw Markdown"
+              icon="i-lucide-file-text"
+              variant="ghost"
+              color="neutral"
+              block
             />
           </div>
         </UCard>

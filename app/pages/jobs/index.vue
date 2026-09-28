@@ -41,7 +41,12 @@ const filters = computed<JobQuery>(() => ({
   salaryMin: count(route.query.pay),
   sort: oneOf(route.query.sort, ['relevance', 'newest', 'salary'] as const) as JobSortField | undefined,
   page: count(route.query.page) ?? 1,
-  perPage: 20
+  perPage: 20,
+  // A card shows the title, company, salary and skills. The description body is
+  // several kilobytes per listing and would be serialised into the SSR payload
+  // for every role on the page, which is the single largest thing shipped to the
+  // browser here.
+  fields: 'summary'
 }))
 
 const { data: result, status } = await useJobs(filters)

@@ -1,3 +1,14 @@
+/**
+ * Request validation.
+ *
+ * Note on zod: this file must use the API common to zod 3 and zod 4, so
+ * `z.string().url()` rather than the v4 top-level `z.url()`. Two majors are
+ * present in the tree — v4.6.5 at the root, and v3.25.76 pulled in by
+ * drizzle-orm under nuxt-ai-ready — and the Nitro server bundle resolved this
+ * module against v3. Under v3 the v4 helpers are undefined, and every request
+ * that parsed a schema failed with `z.url is not a function` while dev, which
+ * resolves the root copy, kept working.
+ */
 import { z } from 'zod'
 import {
   APPLICATION_STATUSES,
@@ -39,6 +50,12 @@ export const jobQuerySchema = z.object({
   currency: z.string().trim().length(3).toUpperCase().optional(),
   status: csvArray(JOB_STATUSES),
   sort: z.enum(JOB_SORT_FIELDS).default('newest'),
+  // `summary` drops the fields a listing card never renders — the description
+  // body, the employer's application address, the view counter. On a page of 20
+  // roles the descriptions alone are ~70 KB, and they are serialised into the
+  // SSR payload whether or not the browser draws them. Absent means `full`, so
+  // the published shape of this endpoint does not change for existing callers.
+  fields: z.enum(['full', 'summary']).optional(),
   page: z.coerce.number().int().positive().default(1),
   perPage: z.coerce.number().int().positive().max(50).default(20)
 })
@@ -74,8 +91,8 @@ const createJobShape = z.object({
   salary: salaryShape.default({ min: 0, max: 0, currency: 'USD', period: 'year', visible: true }),
   skills: z.array(z.string().trim().min(1).max(40)).max(30).default([]),
   tags: z.array(z.string().trim().min(1).max(40)).max(15).default([]),
-  applyUrl: z.union([z.url(), z.literal('')]).default(''),
-  applyEmail: z.union([z.email(), z.literal('')]).default(''),
+  applyUrl: z.union([z.string().url(), z.literal('')]).default(''),
+  applyEmail: z.union([z.string().email(), z.literal('')]).default(''),
   expiresAt: z.string().datetime().optional(),
   featured: z.boolean().default(false)
 })
@@ -103,7 +120,7 @@ export type UpdateJobInput = z.infer<typeof updateJobSchema>
 
 export const createCompanySchema = z.object({
   name: z.string().trim().min(2).max(120),
-  website: z.union([z.url(), z.literal('')]).default(''),
+  website: z.union([z.string().url(), z.literal('')]).default(''),
   description: z.string().trim().max(10_000).default(''),
   industry: z.string().trim().max(80).default(''),
   size: z.enum(COMPANY_SIZES).or(z.literal('')).default(''),
@@ -117,7 +134,7 @@ export type CreateCompanyInput = z.infer<typeof createCompanySchema>
 
 const updateCompanyShape = z.object({
   name: z.string().trim().min(2).max(120).optional(),
-  website: z.union([z.url(), z.literal('')]).optional(),
+  website: z.union([z.string().url(), z.literal('')]).optional(),
   description: z.string().trim().max(10_000).optional(),
   industry: z.string().trim().max(80).optional(),
   size: z.enum(COMPANY_SIZES).or(z.literal('')).optional(),
@@ -137,7 +154,7 @@ export type UpdateCompanyInput = z.infer<typeof updateCompanySchema>
 export const createApplicationSchema = z.object({
   jobId: z.string().trim().min(1),
   fullName: z.string().trim().min(2).max(120),
-  email: z.email(),
+  email: z.string().email(),
   coverNote: z.string().trim().max(5_000).default(''),
   resumeId: z.string().trim().default('')
 })
@@ -157,8 +174,8 @@ export const updateProfileSchema = z.object({
   // A storage object key in the private `resumes` bucket, set by the upload
   // flow rather than typed by hand.
   resumeId: z.string().trim().max(300).optional(),
-  portfolioUrl: z.union([z.url(), z.literal('')]).optional(),
-  linkedinUrl: z.union([z.url(), z.literal('')]).optional(),
+  portfolioUrl: z.union([z.string().url(), z.literal('')]).optional(),
+  linkedinUrl: z.union([z.string().url(), z.literal('')]).optional(),
   openToWork: z.boolean().optional()
 })
 

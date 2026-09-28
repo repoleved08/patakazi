@@ -1,6 +1,6 @@
 import type { H3Event } from 'h3'
 import type { CreateJobInput, JobQueryInput, UpdateJobInput } from '#shared/schemas'
-import type { Job, JobStats, Paginated } from '#shared/types/api'
+import type { Job, JobStats, JobSummary, Paginated } from '#shared/types/api'
 import type { JobStatus } from '#shared/types/job'
 import type { CompanyRow, JobRow } from '#shared/types/models'
 import type { TablesInsert, TablesUpdate } from '#shared/types/database.types'
@@ -45,7 +45,9 @@ export class JobService {
   ) {}
 
   /** Public listing, filtered and paginated. Expired jobs are excluded. */
-  async listPublic(query: JobQueryInput): Promise<Paginated<Job>> {
+  async listPublic<T extends 'full' | 'summary' = 'full'>(
+    query: JobQueryInput & { fields?: T }
+  ): Promise<Paginated<T extends 'summary' ? JobSummary : Job>> {
     const perPage = query.perPage
     const page = query.page
 
@@ -70,7 +72,9 @@ export class JobService {
     const visible = rows.filter(row => isPubliclyVisible(row))
 
     return {
-      data: visible.map(toJob),
+      data: (query.fields === 'summary'
+        ? visible.map(row => toJobSummary(toJob(row)))
+        : visible.map(toJob)) as Paginated<T extends 'summary' ? JobSummary : Job>['data'],
       total,
       page,
       perPage,
@@ -332,6 +336,31 @@ function assignDefined<K extends keyof JobPatch>(row: JobPatch, key: K, value: J
 
 function isUuid(value: string): boolean {
   return /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(value)
+}
+
+/**
+ * Strips a listing down to the fields a card or an index line renders.
+ *
+ * The dropped fields are the expensive ones: the description is employer
+ * markdown of a few kilobytes, and it is the bulk of a 20-row response. The
+ * description is still reachable on the listing's own route, and `fields=full`
+ * keeps returning it here.
+ */
+function toJobSummary(job: Job): JobSummary {
+  return {
+    id: job.id,
+    title: job.title,
+    slug: job.slug,
+    company: job.company,
+    location: job.location,
+    workplaceType: job.workplaceType,
+    employmentType: job.employmentType,
+    seniority: job.seniority,
+    salary: job.salary,
+    skills: job.skills,
+    publishedAt: job.publishedAt,
+    featured: job.featured
+  }
 }
 
 function normaliseList<T>(value: T[] | T | undefined): string[] | undefined {

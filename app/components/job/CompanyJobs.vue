@@ -3,7 +3,9 @@ import type { JobStatus } from '#shared/types/job'
 
 const props = defineProps<{ companyId: string }>()
 
-const { data: result } = await useJobs({ companyId: props.companyId, perPage: 50 })
+// `fields: 'full'` because the table below renders each listing's status and
+// created date, which the summary projection omits.
+const { data: result } = await useJobs({ companyId: props.companyId, perPage: 50, fields: 'full' })
 const { publish, close, remove } = useJobMutations()
 
 const busy = ref<string | null>(null)

@@ -1,4 +1,5 @@
 import { z } from 'zod'
+import { definePublicGet } from '../../utils/publicCache'
 import { useCompanyService } from '../../services/company.service'
 
 const companyQuerySchema = z.object({
@@ -7,14 +8,17 @@ const companyQuerySchema = z.object({
   q: z.string().trim().max(120).optional()
 })
 
-/** GET /api/companies */
-export default defineEventHandler(async (event) => {
+/**
+ * GET /api/companies
+ *
+ * Cached per page and search term. `index.post.ts` shares this path, so the
+ * cache lives on the handler rather than in a route rule.
+ */
+export default definePublicGet('api-companies', async (event) => {
   const parsed = companyQuerySchema.safeParse(getQuery(event))
   if (!parsed.success) {
     throw createError({ statusCode: 400, statusMessage: 'Invalid company filters' })
   }
 
-  const result = await useCompanyService(event).list(parsed.data)
-  setHeader(event, 'cache-control', 'public, max-age=60, s-maxage=300, stale-while-revalidate=600')
-  return result
-})
+  return useCompanyService(event).list(parsed.data)
+}, { maxAge: 600 })

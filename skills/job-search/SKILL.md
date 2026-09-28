@@ -16,16 +16,35 @@ is intentionally readable by agents.
 
 ## How to search
 
-### Preferred: the MCP server
+### Preferred: the `search_jobs` MCP tool
 
-The site runs an MCP server at the site root (`/mcp`). It exposes:
+The site runs an MCP server at the site root (`/mcp`). Its most useful tool is:
 
-- `search_pages` — search the indexed site
-- `list_pages` — list what has been published
-- `get_page_markdown` — read a route's full markdown
+- `search_jobs` — search the open listings directly. Parameters: `query`,
+  `workplaceType`, `employmentType`, `seniority`, `skills` (comma-separated, all
+  must match), `salaryMin`, `location`, `company`, `limit`, `responseFormat`
+  (`markdown` or `json`, default `markdown`).
 
-Use `search_pages` with a natural-language query. The index covers job
-listings, company profiles and blog posts.
+It returns each match as a markdown document with YAML frontmatter — title,
+company, location, workplace type, employment type, seniority, salary range,
+skills, tags, and the listing and apply URLs. The frontmatter field names match
+the JSON API, so anything you learn here transfers.
+
+The server also exposes `search_pages`, `list_pages` and `get_page_markdown`.
+Those read a page index that only exists on a long-running Node server; on
+serverless deployments the index is empty and they return nothing. **Use
+`search_jobs` for listings.** They remain useful for reading a known route's
+markdown verbatim.
+
+### Fallback: the whole board in one request
+
+`GET /llms-jobs.txt` returns every open listing grouped by workplace type, one
+line per role with its salary band and link. Add `?full` to inline every
+description. No query string, no pagination, no rate limit concerns — this is
+the cheapest way to see the entire board.
+
+`GET /llms.txt` is the index: it lists the companies hiring, the roles by
+workplace type, and every route above.
 
 ### Fallback: the JSON search endpoint
 
@@ -44,7 +63,9 @@ The response contains a `summary` string written for direct quotation, plus a
 `results` array. Each result has `title`, `company`, `location`, `salary`
 (`null` when undisclosed) and a `url`.
 
-For full pagination and every filter, use `GET /api/jobs`.
+For full pagination and every filter, use `GET /api/jobs`. Add `fields=summary`
+to omit the description bodies, which is what you want unless you intend to read
+them.
 
 ### Fallback: markdown routes
 

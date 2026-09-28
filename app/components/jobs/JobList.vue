@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import type { Job, Paginated } from '#shared/types/api'
+import type { JobSummary, Paginated } from '#shared/types/api'
 
-defineProps<{ result: Paginated<Job> | null }>()
+defineProps<{ result: Paginated<JobSummary> | null }>()
 
 const page = defineModel<number>('page', { default: 1 })
 </script>

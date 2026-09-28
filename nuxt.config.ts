@@ -22,8 +22,8 @@ export default defineNuxtConfig({
 
   // --- Site identity (nuxt-site-config, via @nuxtjs/seo) -------------------
   site: {
-    name: 'Jobboard',
-    description: 'A job board built to be read by people and agents alike.',
+    name: 'Patakazi',
+    description: 'A hand-curated tech job board. Every listing publishes its salary range, and every page is readable by people and AI agents alike.',
     url: process.env.NUXT_PUBLIC_SITE_URL || 'http://localhost:3000'
   },
 
@@ -40,15 +40,71 @@ export default defineNuxtConfig({
   },
 
   routeRules: {
+    // --- Caching -----------------------------------------------------------
+    //
+    // This is a hand-curated board: listings are entered by an admin a handful
+    // of times a week, so the data changes far more slowly than it is read.
+    // Without these rules every page view and every API call opened a fresh
+    // connection to Postgres, which made the pages that matter most (the index,
+    // the landing page) the slowest ones.
+    //
+    // `swr` serves the cached copy immediately and revalidates in the
+    // background, so a cold cache is never a user-visible delay. The
+    // consequence to be aware of: an edit made in the dashboard can take up to
+    // the TTL to appear. Five minutes is the ceiling here, and it only matters
+    // to the person who just made the edit.
+    '/': { swr: 300 },
+    '/jobs': { swr: 300 },
+    '/companies': { swr: 300 },
+    '/jobs/**': { swr: 300 },
+    '/companies/**': { swr: 300 },
+
+    // The public read APIs are cached in their own handlers
+    // (`server/utils/publicCache.ts`), not here. `/api/jobs` and
+    // `/api/companies` each have a POST sibling on the same path, and a route
+    // rule's cache does not distinguish methods — a rule on `/api/jobs` made
+    // `POST /api/jobs` answer 200 with the cached list instead of 401. Route
+    // rules have no method filter, so caching has to live on the GET handler.
+
+    // `/llms-jobs.txt` is a plain read-only route, so a route rule is safe and
+    // lets the CDN hold it. `/llms.txt` and `/llms-full.txt` are answered by
+    // middleware, which short-circuits before this layer, so they are cached
+    // inside the document builder instead.
+
+    // --- Prerender ---------------------------------------------------------
+    //
     // Only static prose is baked at build time. The landing page and the job
     // index read live data, so freezing them into the build would ship an empty
-    // board; they stay SSR and nuxt-ai-ready indexes them at runtime instead.
+    // board; they are served from the SWR cache above instead.
     '/about': { prerender: true },
     '/blog': { prerender: true },
-    '/blog/**': { prerender: true }
+    '/blog/**': { prerender: true },
+
+    // --- Never cache -------------------------------------------------------
+    //
+    // These are per-visitor or per-account. Caching any of them would serve one
+    // person's dashboard, saved jobs or profile to the next. The editor routes
+    // are listed explicitly because `/jobs/**` above is a prefix match that
+    // would otherwise swallow them.
+    '/dashboard/**': { swr: false, cache: false },
+    '/jobs/new': { swr: false, cache: false },
+    '/jobs/*/edit': { swr: false, cache: false },
+    '/companies/new': { swr: false, cache: false },
+    '/companies/*/edit': { swr: false, cache: false },
+    '/api/saved-jobs/**': { swr: false, cache: false },
+    '/api/profile/**': { swr: false, cache: false },
+    '/api/files/**': { swr: false, cache: false }
   },
 
   compatibilityDate: '2026-06-30',
+
+  // --- Nitro --------------------------------------------------------------
+  nitro: {
+    // Precompress the hashed build output so the CDN can serve .br/.gz without
+    // compressing per request. The 49 MB of server chunks are not affected;
+    // this is for the client bundle and the public assets.
+    compressPublicAssets: true
+  },
 
   // --- nuxt-ai-ready ------------------------------------------------------
   aiReady: {
@@ -89,7 +145,7 @@ export default defineNuxtConfig({
     },
     runtimeSyncSecret: process.env.NUXT_AI_READY_SYNC_SECRET || '',
     mcpServerCard: {
-      name: 'com.example/jobboard-mcp'
+      name: 'com.patakazi/jobs'
     }
   },
 
