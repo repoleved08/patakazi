@@ -5,6 +5,11 @@
  * Global SEO defaults live here; individual pages override the title and
  * description with `useSeoMeta`. `nuxt-ai-ready` appends `llms.txt` and
  * sitemap links, and `@nuxtjs/seo` supplies canonical URLs and OG images.
+ *
+ * The chrome itself lives in `app/layouts/default.vue` rather than inline here.
+ * A page that opts into another layout — `bare` for the sign-in flow, which
+ * should not carry the header — could never actually get one while the header
+ * was hard-coded at this level.
  */
 const site = useSiteConfig()
 
@@ -30,10 +35,8 @@ useSeoMeta({
       :height="2"
     />
 
-    <AppHeader />
-    <UMain>
+    <NuxtLayout>
       <NuxtPage />
-    </UMain>
-    <AppFooter />
+    </NuxtLayout>
   </UApp>
 </template>

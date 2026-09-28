@@ -20,9 +20,10 @@ export { requireAuth, resolveAuthContext } from '../utils/supabase'
 /**
  * Whether the signed-in user may write for a company.
  *
- * A company with no owner is not manageable by anyone: claiming is an explicit
- * create, not an implicit takeover, otherwise anyone could seize an unclaimed
- * listing by guessing its id.
+ * A company with no owner is not claimable by whoever guesses its id: claiming
+ * is an explicit create, not an implicit takeover. Platform admins are the
+ * exception, because listings are entered by hand and the admin is not the
+ * employer that posted them.
  */
 export async function canManageCompany(event: H3Event, companyId: string, userId: string): Promise<boolean> {
   const supabase = useSupabaseServer(event)
@@ -33,7 +34,8 @@ export async function canManageCompany(event: H3Event, companyId: string, userId
     .maybeSingle()
 
   if (error) return false
-  return data?.owner_id === userId
+  if (data?.owner_id === userId) return true
+  return isAdmin(event, userId)
 }
 
 /** Throw 403 unless the signed-in user manages the company. */
@@ -46,7 +48,8 @@ export async function requireCompanyAccess(event: H3Event, companyId: string) {
 }
 
 /**
- * Throw 403 unless the caller posted the job or manages its company.
+ * Throw 403 unless the caller posted the job, manages its company, or is an
+ * admin.
  *
  * `created_by` alone is not enough: a company owner needs to edit or close every
  * listing for their company, including ones posted before they claimed it.

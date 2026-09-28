@@ -56,10 +56,12 @@ async function submit() {
       services: form.services ?? '',
       workingHours: form.workingHours ?? ''
     }
-    await update(company.value.id, payload)
+    const updated = await update(company.value.id, payload)
     notice.value = 'Saved.'
-    // A rename changes the slug, so leave the stale URL behind.
-    await navigateTo(`/companies/${slug.value}`, { replace: true })
+    // A rename changes the slug, so the response carries the new one. The route
+    // param is the *old* slug and would 404, so the URL is replaced with what
+    // the server actually stored.
+    await navigateTo(`/companies/${updated.slug}`, { replace: true })
   } catch (cause) {
     error.value = cause instanceof Error ? cause.message : 'Could not save the company.'
   } finally {

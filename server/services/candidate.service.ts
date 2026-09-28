@@ -1,88 +1,21 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
 import type { H3Event } from 'h3'
-import type { CreateApplicationInput, UpdateProfileInput } from '#shared/schemas'
-import type { Application, CandidateProfile, SavedJob } from '#shared/types/api'
-import type { ApplicationRow } from '#shared/types/models'
-import { toApplication, toProfile } from '../mappers/row-mappers'
+import type { UpdateProfileInput } from '#shared/schemas'
+import type { CandidateProfile, SavedJob } from '#shared/types/api'
+import { toProfile } from '../mappers/row-mappers'
 import { TABLES, useSupabaseServer } from '../utils/supabase'
-import { requireAuth, requireCompanyAccess, resolveAuthContext } from './authorization.service'
+import { requireAuth, resolveAuthContext } from './authorization.service'
 import { useJobService } from './job.service'
 
 /**
- * Applications, saved jobs and candidate profiles.
+ * Saved jobs and candidate profiles.
  *
- * Applications are candidate-facing (anyone may apply, with or without an
- * account) but employer-facing reads are restricted to the company that owns the
- * job. That restriction is enforced here, because this service uses the
- * service-role client and so bypasses the RLS policies that would otherwise
- * enforce it.
+ * Applications were removed from this service. Patakazi is an aggregator: a
+ * listing carries the employer's own `apply_url`, and the board never collects
+ * an application, so there is nothing here to write.
  */
-export class ApplicationService {
+export class CandidateService {
   constructor(private readonly supabase: SupabaseClient) {}
-
-  async submit(event: H3Event, input: CreateApplicationInput): Promise<Application> {
-    const target = await useJobService(event).findPublic(input.jobId)
-    if (!target) throw createError({ statusCode: 404, statusMessage: 'Job not found' })
-
-    // A signed-in candidate is recorded against their account; an anonymous one
-    // leaves it null. The partial unique indexes in the migration reject a
-    // duplicate either way, so this pre-check is only there to return a
-    // friendlier message than a 409 from the database.
-    const context = await resolveAuthContext(event)
-    const duplicate = await this.findApplication(target.id, input.email, context?.userId ?? null)
-    if (duplicate) {
-      throw createError({ statusCode: 409, statusMessage: 'You have already applied to this job' })
-    }
-
-    const { data, error } = await this.supabase
-      .from(TABLES.applications)
-      .insert({
-        job_id: target.id,
-        applicant_id: context?.userId ?? null,
-        full_name: input.fullName,
-        email: input.email,
-        resume_id: input.resumeId,
-        cover_note: input.coverNote,
-        status: 'submitted'
-      })
-      .select('*')
-      .single()
-
-    throwIfError(error, 'Could not submit the application')
-    return toApplication(data)
-  }
-
-  /** Applications for a job, restricted to employers who manage its company. */
-  async listForJob(event: H3Event, jobId: string): Promise<Application[]> {
-    const job = await useJobService(event).getByIdForUser(event, jobId)
-    await requireCompanyAccess(event, job.company.id)
-
-    const { data, error } = await this.supabase
-      .from(TABLES.applications)
-      .select('*')
-      .eq('job_id', jobId)
-      .order('created_at', { ascending: false })
-      .limit(200)
-
-    throwIfError(error, 'Could not load applications')
-    return (data ?? []).map(toApplication)
-  }
-
-  async updateStatus(event: H3Event, applicationId: string, status: Application['status']): Promise<Application> {
-    const row = await this.getApplicationRow(applicationId)
-    const job = await useJobService(event).getByIdForUser(event, row.job_id)
-    await requireCompanyAccess(event, job.company.id)
-
-    const { data, error } = await this.supabase
-      .from(TABLES.applications)
-      .update({ status })
-      .eq('id', applicationId)
-      .select('*')
-      .single()
-
-    throwIfError(error, 'Could not update the application')
-    return toApplication(data)
-  }
 
   // --- Saved jobs ---------------------------------------------------------
 
@@ -171,40 +104,10 @@ export class ApplicationService {
     throwIfError(error, 'Could not save the profile')
     return toProfile(data)
   }
-
-  // --- Internals ----------------------------------------------------------
-
-  private async getApplicationRow(id: string): Promise<ApplicationRow> {
-    const { data, error } = await this.supabase
-      .from(TABLES.applications)
-      .select('*')
-      .eq('id', id)
-      .maybeSingle()
-
-    if (error || !data) throw createError({ statusCode: 404, statusMessage: 'Application not found' })
-    return data
-  }
-
-  /** Existing application for a job, matched by account when signed in, else email. */
-  private async findApplication(jobId: string, email: string, userId: string | null): Promise<boolean> {
-    let query = this.supabase
-      .from(TABLES.applications)
-      .select('id')
-      .eq('job_id', jobId)
-      .limit(1)
-
-    query = userId
-      ? query.or(`applicant_id.eq.${userId},email.eq.${email}`)
-      : query.eq('email', email)
-
-    const { data, error } = await query
-    if (error) return false
-    return (data?.length ?? 0) > 0
-  }
 }
 
-export function useApplicationService(event: H3Event): ApplicationService {
-  return new ApplicationService(useSupabaseServer(event))
+export function useCandidateService(event: H3Event): CandidateService {
+  return new CandidateService(useSupabaseServer(event))
 }
 
 /**

@@ -1,4 +1,4 @@
-import { useApplicationService } from '../../services/application.service'
+import { useCandidateService } from '../../services/candidate.service'
 
 /** POST /api/saved-jobs — save a listing. Body: { jobId }. */
 export default defineEventHandler(async (event) => {
@@ -6,5 +6,5 @@ export default defineEventHandler(async (event) => {
   if (!body?.jobId) throw createError({ statusCode: 400, statusMessage: 'Missing jobId' })
 
   setResponseStatus(event, 201)
-  return useApplicationService(event).save(event, body.jobId)
+  return useCandidateService(event).save(event, body.jobId)
 })

@@ -1,7 +1,7 @@
-import { useApplicationService } from '../../services/application.service'
+import { useCandidateService } from '../../services/candidate.service'
 
 /** GET /api/profile — the signed-in candidate's profile, or null. */
 export default defineEventHandler(async (event) => {
   setHeader(event, 'cache-control', 'private, no-store')
-  return useApplicationService(event).getProfile(event)
+  return useCandidateService(event).getProfile(event)
 })

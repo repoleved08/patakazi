@@ -71,14 +71,6 @@ const statusColor: Record<JobStatus, 'primary' | 'neutral' | 'warning' | 'succes
           size="xs"
         />
         <UButton
-          :to="`/dashboard/jobs/${job.id}/applications`"
-          label="Applicants"
-          icon="i-lucide-users"
-          color="neutral"
-          variant="ghost"
-          size="xs"
-        />
-        <UButton
           v-if="job.status === 'published'"
           label="Close"
           color="neutral"

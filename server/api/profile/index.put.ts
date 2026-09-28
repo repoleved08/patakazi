@@ -1,5 +1,5 @@
 import { updateProfileSchema } from '#shared/schemas'
-import { useApplicationService } from '../../services/application.service'
+import { useCandidateService } from '../../services/candidate.service'
 
 /** PUT /api/profile — create or replace the signed-in candidate's profile. */
 export default defineEventHandler(async (event) => {
@@ -12,5 +12,5 @@ export default defineEventHandler(async (event) => {
     })
   }
 
-  return useApplicationService(event).upsertProfile(event, parsed.data)
+  return useCandidateService(event).upsertProfile(event, parsed.data)
 })

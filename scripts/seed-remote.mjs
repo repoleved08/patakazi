@@ -10,6 +10,19 @@ import { writeFileSync } from 'node:fs'
 import { createClient } from '@supabase/supabase-js'
 
 const OWNER = '0af97a37-bee3-4308-92e2-2444bc9ef6b3'
+/**
+ * SQL for the `owner_id` / `created_by` columns.
+ *
+ * Both are nullable with an `on delete set null` foreign key to `auth.users`, so
+ * a literal uid would make the checked-in SQL fail on a fresh local database,
+ * where no account exists yet. A scalar subquery yields the oldest account when
+ * there is one and NULL when there is not, and the listings still publish
+ * because public reads do not require an owner.
+ *
+ * The remote path below writes rows through PostgREST instead, where a missing
+ * account is a real user error worth surfacing, so it keeps the literal `OWNER`.
+ */
+const OWNER_SQL = `(select id from auth.users order by created_at asc limit 1)`
 const day = 86_400_000
 const ago = d => new Date(Date.now() - d * day).toISOString()
 const ahead = d => new Date(Date.now() + d * day).toISOString()
@@ -1040,7 +1053,7 @@ const q = s => `'${String(s).replace(/'/g, '\'\'')}'`
 const arr = v => `array[${v.map(q).join(', ')}]`
 
 function companyRows() {
-  return companies.map(c => `  (${q(c.id)}, ${q(c.name)}, ${q(c.slug)}, ${q(c.description)}, ${q(c.website)}, ${q(c.industry)}, ${q(c.size)}, ${c.founded}, ${q(c.location)}, ${q(c.services)}, ${q(c.workingHours)}, '', ${q(OWNER)}, ${c.verified})`)
+  return companies.map(c => `  (${q(c.id)}, ${q(c.name)}, ${q(c.slug)}, ${q(c.description)}, ${q(c.website)}, ${q(c.industry)}, ${q(c.size)}, ${c.founded}, ${q(c.location)}, ${q(c.services)}, ${q(c.workingHours)}, '', ${OWNER_SQL}, ${c.verified})`)
 }
 
 /** Deterministic UUID per job, so the SQL and the live rows agree. */
@@ -1050,7 +1063,7 @@ const careersHost = slug => (slug === 'ihub-nairobi' ? 'ihub.co.ke' : `${slug}.e
 function jobRows() {
   return jobs.map((j, i) => {
     const c = COMPANY_BY_SLUG.get(j.company)
-    return `  (${q(jobId(i + 1))}, ${q(j.title)}, ${q(j.slug)}, ${q(descriptionFor(j))}, ${q(c.id)}, ${q(c.name)}, ${q(c.slug)}, '', ${q(j.location)}, ${q(j.workplace)}, ${q(j.employment)}, ${q(j.seniority)}, ${j.salary[0]}, ${j.salary[1]}, 'USD', 'year', ${j.visible}, ${arr(j.skills)}, ${arr(j.tags)}, ${q(`https://${careersHost(c.slug)}/careers`)}, ${q(`careers@${c.slug}.example`)}, 'published', ${q(ago(j.publishedDaysAgo))}, ${q(ahead(j.expiresInDays))}, ${j.views}, ${j.featured}, ${q(OWNER)})`
+    return `  (${q(jobId(i + 1))}, ${q(j.title)}, ${q(j.slug)}, ${q(descriptionFor(j))}, ${q(c.id)}, ${q(c.name)}, ${q(c.slug)}, '', ${q(j.location)}, ${q(j.workplace)}, ${q(j.employment)}, ${q(j.seniority)}, ${j.salary[0]}, ${j.salary[1]}, 'USD', 'year', ${j.visible}, ${arr(j.skills)}, ${arr(j.tags)}, ${q(`https://${careersHost(c.slug)}/careers`)}, ${q(`careers@${c.slug}.example`)}, 'published', ${q(ago(j.publishedDaysAgo))}, ${q(ahead(j.expiresInDays))}, ${j.views}, ${j.featured}, ${OWNER_SQL})`
   })
 }
 
@@ -1065,9 +1078,14 @@ const sql = `-- ================================================================
 -- The search_vector column is deliberately not inserted; the jobs_search_trigger
 -- maintains it.
 --
--- owner_id and created_by point at the demo admin account. If that account does
--- not exist (a fresh local database), they are set to NULL by the guard below, and
--- the listings still publish because public reads do not require an owner.
+-- owner_id and created_by resolve to the oldest account in auth.users, or NULL
+-- when there is none, so this file also runs on a fresh local database. The
+-- listings still publish either way: public reads do not require an owner.
+--
+-- published_at and expires_at are relative to the moment this file is generated,
+-- which is why regenerating it produces a large diff. That is deliberate: public
+-- reads drop rows whose expires_at has passed, so pinned dates would quietly
+-- empty the board.
 -- ===========================================================================
 
 -- --- Companies ---------------------------------------------------------------
@@ -1147,7 +1165,7 @@ values (
   now() - interval '30 days',
   2814,
   false,
-  '${OWNER}'
+  ${OWNER_SQL}
 )
 on conflict (slug) do update set status = excluded.status, description = excluded.description;
 
@@ -1180,7 +1198,7 @@ values (
   null,
   0,
   false,
-  '${OWNER}'
+  ${OWNER_SQL}
 )
 on conflict (slug) do update set title = excluded.title, description = excluded.description, status = excluded.status;
 

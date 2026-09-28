@@ -16,7 +16,7 @@
     "db:reset": "npx supabase db reset",
     "db:diff": "npx supabase db diff --file",
     "db:status": "npx supabase migration list",
-    "db:types": "npx supabase gen types typescript --local > shared/types/database.ts",
+    "db:types": "npx supabase gen types typescript --local > shared/types/database.types.ts",
     "db:seed": "node scripts/seed-remote.mjs",
     "db:seed:remote": "node scripts/seed-remote.mjs --remote"
   },

@@ -28,8 +28,6 @@ export interface AuthUser {
   name: string
   /** Storage object key for the avatar, served through `/api/files/...`. */
   avatar: string
-  /** `employer` | `admin` when set; drives employer-only affordances. */
-  role: string
 }
 
 function toAuthUser(claims: JwtPayload): AuthUser {
@@ -44,8 +42,7 @@ function toAuthUser(claims: JwtPayload): AuthUser {
     id: claims.sub ?? '',
     email: typeof claims['email'] === 'string' ? claims['email'] : '',
     name: firstString(metadata, ['full_name', 'name', 'given_name']),
-    avatar: firstString(metadata, ['avatar_url', 'picture']),
-    role: typeof metadata['role'] === 'string' ? metadata['role'] : ''
+    avatar: firstString(metadata, ['avatar_url', 'picture'])
   }
 }
 
@@ -135,8 +132,6 @@ export function useAuth() {
   return {
     user: readonly(authUser),
     isAuthenticated: computed(() => authUser.value !== null),
-    isEmployer: computed(() => authUser.value?.role === 'employer' || authUser.value?.role === 'admin'),
-    isAdmin: computed(() => authUser.value?.role === 'admin'),
     isLoading: readonly(isLoading),
     refresh,
     sendMagicLink,

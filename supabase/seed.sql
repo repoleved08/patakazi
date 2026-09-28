@@ -9,9 +9,14 @@
 -- The search_vector column is deliberately not inserted; the jobs_search_trigger
 -- maintains it.
 --
--- owner_id and created_by point at the demo admin account. If that account does
--- not exist (a fresh local database), they are set to NULL by the guard below, and
--- the listings still publish because public reads do not require an owner.
+-- owner_id and created_by resolve to the oldest account in auth.users, or NULL
+-- when there is none, so this file also runs on a fresh local database. The
+-- listings still publish either way: public reads do not require an owner.
+--
+-- published_at and expires_at are relative to the moment this file is generated,
+-- which is why regenerating it produces a large diff. That is deliberate: public
+-- reads drop rows whose expires_at has passed, so pinned dates would quietly
+-- empty the board.
 -- ===========================================================================
 
 -- --- Companies ---------------------------------------------------------------
@@ -38,7 +43,7 @@ Cloud and hosting services
 Customer and network data analytics
 Developer platforms and public APIs', 'Monday to Friday, 08:00–17:00 East Africa Time (EAT, UTC+3)
 Hybrid: teams are in the office two to three days a week
-On-call is shared within engineering rotations and compensated', '', '0af97a37-bee3-4308-92e2-2444bc9ef6b3', true),
+On-call is shared within engineering rotations and compensated', '', (select id from auth.users order by created_at asc limit 1), true),
   ('c0000002-0000-4000-8000-000000000002', 'M-KOPA', 'm-kopa', 'M-KOPA is a fintech company that sells smartphones, solar systems, and productive assets on flexible daily, weekly, and monthly payment plans, with more than three million active customers across Africa.
 
 Roughly 70% of M-KOPA''s customers have never held a bank account, so the product is built around USSD and low-end Android rather than desktop web. The engineering challenge is less about scale for its own sake and more about making a credit and logistics business work on a $40 handset and an intermittent connection.
@@ -54,7 +59,7 @@ Mobile money and payments
 Field agent operations platform
 Customer identity and fraud prevention', 'Monday to Friday, 08:30–17:30 EAT
 Hybrid: three days in the Nairobi office, two days remote
-Some engineering teams support US and LATAM customers on a later shift', '', '0af97a37-bee3-4308-92e2-2444bc9ef6b3', true),
+Some engineering teams support US and LATAM customers on a later shift', '', (select id from auth.users order by created_at asc limit 1), true),
   ('c0000003-0000-4000-8000-000000000003', 'Twiga Foods', 'twiga-foods', 'Twiga Foods is an agritech marketplace that collects fresh produce directly from smallholder farmers and delivers it to restaurants and retailers across Kenya, moving tens of thousands of kilograms every week.
 
 The interesting part of the business is the last mile. Orders from restaurants are consolidated into collection routes, matched to farmers who have the volume and the crop, and then picked and delivered within hours of harvest. That means the software is a scheduling and logistics system before it is anything else.
@@ -70,7 +75,7 @@ Farmer marketplace and pricing
 Last-mile delivery and route planning
 Produce traceability and quality grading', 'Monday to Saturday, 07:00–19:00 EAT, because produce moves early
 Hybrid: warehouse and field teams start earlier than office teams
-Market-day coverage means weekend availability during peak weeks', '', '0af97a37-bee3-4308-92e2-2444bc9ef6b3', true),
+Market-day coverage means weekend availability during peak weeks', '', (select id from auth.users order by created_at asc limit 1), true),
   ('c0000004-0000-4000-8000-000000000004', 'Sendy', 'sendy', 'Sendy is an on-demand logistics platform that matches businesses needing to move freight in Nairobi with a network of independent motorcycle and van riders, tracked in real time from pickup to proof of delivery.
 
 Freight matching in a dense city like Nairobi is a routing problem with a lot of edge cases: a rider''s phone dies mid-delivery, an address does not resolve, a parcel is rejected on arrival. The engineering team spends most of its time on dispatch, pricing, and the reliability of the tracking surface that customers use to see where their goods are.
@@ -86,7 +91,7 @@ Freight quoting and pricing
 Enterprise logistics API
 Rider and driver marketplace', 'Monday to Saturday, 08:00–19:00 EAT
 Hybrid: two office days per week
-Dispatch and support are covered in shifts, including one weekend day', '', '0af97a37-bee3-4308-92e2-2444bc9ef6b3', true),
+Dispatch and support are covered in shifts, including one weekend day', '', (select id from auth.users order by created_at asc limit 1), true),
   ('c0000005-0000-4000-8000-000000000005', 'Cellulant', 'cellulant', 'Cellulant is a payments infrastructure provider that connects banks, mobile money operators, and fintechs to a single collection and payout API across more than thirty African markets.
 
 Its customers are regulated institutions, so the engineering bar is different from a consumer app: audit trails, idempotency, reconciliation, and uptime guarantees are part of the product rather than an afterthought. Teams work across time zones, and the Nairobi office is the East African engineering hub.
@@ -102,7 +107,7 @@ Reconciliation and settlement
 Regulatory and compliance reporting
 Mobile money and bank integrations', 'Monday to Friday, 09:00–18:00 WAT (UTC+1) / 09:00–18:00 EAT (UTC+3)
 Hybrid: three office days per week in Nairobi
-Follow-the-sun on-call across Lagos, Nairobi, and partner markets', '', '0af97a37-bee3-4308-92e2-2444bc9ef6b3', true),
+Follow-the-sun on-call across Lagos, Nairobi, and partner markets', '', (select id from auth.users order by created_at asc limit 1), true),
   ('c0000006-0000-4000-8000-000000000006', 'iHub Nairobi', 'ihub-nairobi', 'iHub Nairobi is one of Africa''s oldest technology incubators, a co-working and research community in Kileleshwa that has hosted hundreds of startups and runs programmes for founders and early technical hires.
 
 Because it operates more like a community than a corporation, the work is wide: internal platforms, programme tooling, events, and building alongside the startups in the building. It is a good fit for someone early in their career who wants breadth and ownership rather than a narrow specialism.
@@ -118,7 +123,7 @@ Co-working space and community
 Technical workshops and training
 Partnerships with universities and NGOs', 'Monday to Friday, 09:00–18:00 EAT
 Mostly onsite, with flexible hours around community events
-Some evening and weekend work during programme launches', '', '0af97a37-bee3-4308-92e2-2444bc9ef6b3', false)
+Some evening and weekend work during programme launches', '', (select id from auth.users order by created_at asc limit 1), false)
 on conflict (slug) do update set
   name = excluded.name,
   description = excluded.description,
@@ -203,7 +208,7 @@ Safaricom operates at national scale in a market where most users are on mobile 
 Apply on the Safaricom careers page or by email. This listing is published on Patakazi, an agent-readable job board, so you can also hand the structured listing to an assistant and get a shortlist instead of a wall of text.
 
 **Safaricom** — Telecommunications · 5000 plus · founded 1997 · Nairobi, Kenya
-', 'c0000001-0000-4000-8000-000000000001', 'Safaricom', 'safaricom', '', 'Nairobi, Kenya', 'hybrid', 'full_time', 'senior', 95000, 140000, 'USD', 'year', true, array['nuxt', 'typescript', 'vue', 'tailwind', 'accessibility'], array['agent-ready', 'salary-transparent', 'performance'], 'https://safaricom.example/careers', 'careers@safaricom.example', 'published', '2026-09-27T07:12:40.399Z', '2026-11-27T07:12:40.400Z', 1243, true, '0af97a37-bee3-4308-92e2-2444bc9ef6b3'),
+', 'c0000001-0000-4000-8000-000000000001', 'Safaricom', 'safaricom', '', 'Nairobi, Kenya', 'hybrid', 'full_time', 'senior', 95000, 140000, 'USD', 'year', true, array['nuxt', 'typescript', 'vue', 'tailwind', 'accessibility'], array['agent-ready', 'salary-transparent', 'performance'], 'https://safaricom.example/careers', 'careers@safaricom.example', 'published', '2026-09-27T13:09:01.303Z', '2026-11-27T13:09:01.303Z', 1243, true, (select id from auth.users order by created_at asc limit 1)),
   ('d0000001-0000-4000-8000-000000000002', 'Data Engineer — Listings and Salary Transparency', 'safaricom-data-engineer-listings', '## About the role
 
 Safaricom is hiring a data engineer to build the pipelines that turn raw hiring data into a clean, queryable, agent-readable layer. The output is not a dashboard for managers; it is the structured layer that both the public site and automated agents depend on to answer questions like "what does a senior data engineer earn at Safaricom, and where do they work?".
@@ -268,7 +273,7 @@ Safaricom operates at national scale in a market where most users are on mobile 
 Apply on the Safaricom careers page or by email. This listing is published on Patakazi, an agent-readable job board, so you can also hand the structured listing to an assistant and get a shortlist instead of a wall of text.
 
 **Safaricom** — Telecommunications · 5000 plus · founded 1997 · Nairobi, Kenya
-', 'c0000001-0000-4000-8000-000000000001', 'Safaricom', 'safaricom', '', 'Nairobi, Kenya', 'remote', 'full_time', 'senior', 88000, 132000, 'USD', 'year', true, array['postgresql', 'python', 'sql', 'airflow', 'data-engineering'], array['agent-ready', 'salary-transparent', 'remote-first'], 'https://safaricom.example/careers', 'careers@safaricom.example', 'published', '2026-09-24T07:12:40.400Z', '2026-11-12T07:12:40.400Z', 612, false, '0af97a37-bee3-4308-92e2-2444bc9ef6b3'),
+', 'c0000001-0000-4000-8000-000000000001', 'Safaricom', 'safaricom', '', 'Nairobi, Kenya', 'remote', 'full_time', 'senior', 88000, 132000, 'USD', 'year', true, array['postgresql', 'python', 'sql', 'airflow', 'data-engineering'], array['agent-ready', 'salary-transparent', 'remote-first'], 'https://safaricom.example/careers', 'careers@safaricom.example', 'published', '2026-09-24T13:09:01.303Z', '2026-11-12T13:09:01.303Z', 612, false, (select id from auth.users order by created_at asc limit 1)),
   ('d0000001-0000-4000-8000-000000000003', 'Backend Engineer — M-PESA Payments Platform', 'safaricom-backend-engineer-mpesa', '## About the role
 
 This role sits inside the engineering team that keeps M-PESA transaction processing available. The systems are high throughput, heavily audited, and unforgiving of subtle errors: an idempotency mistake is a support escalation, and an availability mistake is a national story.
@@ -333,7 +338,7 @@ Safaricom operates at national scale in a market where most users are on mobile 
 Apply on the Safaricom careers page or by email. This listing is published on Patakazi, an agent-readable job board, so you can also hand the structured listing to an assistant and get a shortlist instead of a wall of text.
 
 **Safaricom** — Telecommunications · 5000 plus · founded 1997 · Nairobi, Kenya
-', 'c0000001-0000-4000-8000-000000000001', 'Safaricom', 'safaricom', '', 'Nairobi, Kenya', 'onsite', 'full_time', 'mid', 70000, 105000, 'USD', 'year', true, array['go', 'postgresql', 'kubernetes', 'kafka', 'microservices'], array['payments', 'reliability', 'high-scale'], 'https://safaricom.example/careers', 'careers@safaricom.example', 'published', '2026-09-19T07:12:40.400Z', '2026-10-28T07:12:40.400Z', 903, false, '0af97a37-bee3-4308-92e2-2444bc9ef6b3'),
+', 'c0000001-0000-4000-8000-000000000001', 'Safaricom', 'safaricom', '', 'Nairobi, Kenya', 'onsite', 'full_time', 'mid', 70000, 105000, 'USD', 'year', true, array['go', 'postgresql', 'kubernetes', 'kafka', 'microservices'], array['payments', 'reliability', 'high-scale'], 'https://safaricom.example/careers', 'careers@safaricom.example', 'published', '2026-09-19T13:09:01.303Z', '2026-10-28T13:09:01.303Z', 903, false, (select id from auth.users order by created_at asc limit 1)),
   ('d0000001-0000-4000-8000-000000000004', 'Product Manager — Small Business and USSD', 'safaricom-product-manager-usd', '## About the role
 
 Safaricom wants a product manager for the small-business and USSD portfolio: the flows through which a shop owner without a smartphone checks a balance, pays a supplier, or gets a mobile money statement.
@@ -398,7 +403,7 @@ Safaricom operates at national scale in a market where most users are on mobile 
 Apply on the Safaricom careers page or by email. This listing is published on Patakazi, an agent-readable job board, so you can also hand the structured listing to an assistant and get a shortlist instead of a wall of text.
 
 **Safaricom** — Telecommunications · 5000 plus · founded 1997 · Nairobi, Kenya
-', 'c0000001-0000-4000-8000-000000000001', 'Safaricom', 'safaricom', '', 'Nairobi, Kenya', 'hybrid', 'full_time', 'lead', 90000, 130000, 'USD', 'year', true, array['product-management', 'sql', 'user-research', 'analytics'], array['fintech', 'emerging-markets', 'customer-facing'], 'https://safaricom.example/careers', 'careers@safaricom.example', 'published', '2026-09-12T07:12:40.400Z', '2026-11-27T07:12:40.400Z', 431, false, '0af97a37-bee3-4308-92e2-2444bc9ef6b3'),
+', 'c0000001-0000-4000-8000-000000000001', 'Safaricom', 'safaricom', '', 'Nairobi, Kenya', 'hybrid', 'full_time', 'lead', 90000, 130000, 'USD', 'year', true, array['product-management', 'sql', 'user-research', 'analytics'], array['fintech', 'emerging-markets', 'customer-facing'], 'https://safaricom.example/careers', 'careers@safaricom.example', 'published', '2026-09-12T13:09:01.303Z', '2026-11-27T13:09:01.303Z', 431, false, (select id from auth.users order by created_at asc limit 1)),
   ('d0000001-0000-4000-8000-000000000005', 'Senior Backend Engineer — Credit and Collections', 'm-kopa-senior-backend-engineer-credit', '## About the role
 
 M-KOPA''s credit engine decides who gets a financed phone, and its collections system decides what happens when someone falls behind. Both are built on repayment behaviour rather than credit history, because our customers have no credit file. That makes the engineering interesting: the rules are subtle, the data is behavioural, and the consequences of a bug are real people''s devices.
@@ -459,7 +464,7 @@ Roughly 70% of M-KOPA''s customers have never held a bank account, so the produc
 Apply on the M-KOPA careers page or by email. This listing is published on Patakazi, an agent-readable job board, so you can also hand the structured listing to an assistant and get a shortlist instead of a wall of text.
 
 **M-KOPA** — Fintech · 1001 5000 · founded 2011 · Nairobi, Kenya
-', 'c0000002-0000-4000-8000-000000000002', 'M-KOPA', 'm-kopa', '', 'Nairobi, Kenya', 'hybrid', 'full_time', 'senior', 78000, 115000, 'USD', 'year', true, array['python', 'postgresql', 'fastapi', 'celery', 'aws'], array['fintech', 'lending', 'salary-transparent'], 'https://m-kopa.example/careers', 'careers@m-kopa.example', 'published', '2026-09-26T07:12:40.400Z', '2026-11-12T07:12:40.400Z', 1587, true, '0af97a37-bee3-4308-92e2-2444bc9ef6b3'),
+', 'c0000002-0000-4000-8000-000000000002', 'M-KOPA', 'm-kopa', '', 'Nairobi, Kenya', 'hybrid', 'full_time', 'senior', 78000, 115000, 'USD', 'year', true, array['python', 'postgresql', 'fastapi', 'celery', 'aws'], array['fintech', 'lending', 'salary-transparent'], 'https://m-kopa.example/careers', 'careers@m-kopa.example', 'published', '2026-09-26T13:09:01.303Z', '2026-11-12T13:09:01.303Z', 1587, true, (select id from auth.users order by created_at asc limit 1)),
   ('d0000001-0000-4000-8000-000000000006', 'Android Engineer — Customer App', 'm-kopa-android-engineer', '## About the role
 
 M-KOPA''s customer app is used on low-end Android devices across six markets, often on 2G-equivalent connections with limited storage. Making it feel fast and reliable under those conditions is the actual product challenge, and it is a more interesting constraint than most app teams work under.
@@ -519,7 +524,7 @@ Roughly 70% of M-KOPA''s customers have never held a bank account, so the produc
 Apply on the M-KOPA careers page or by email. This listing is published on Patakazi, an agent-readable job board, so you can also hand the structured listing to an assistant and get a shortlist instead of a wall of text.
 
 **M-KOPA** — Fintech · 1001 5000 · founded 2011 · Nairobi, Kenya
-', 'c0000002-0000-4000-8000-000000000002', 'M-KOPA', 'm-kopa', '', 'Remote, East Africa', 'remote', 'full_time', 'mid', 65000, 95000, 'USD', 'year', true, array['kotlin', 'android', 'jetpack-compose', 'mvvm', 'testing'], array['mobile', 'low-bandwidth', 'fintech'], 'https://m-kopa.example/careers', 'careers@m-kopa.example', 'published', '2026-09-22T07:12:40.400Z', '2026-11-12T07:12:40.400Z', 743, false, '0af97a37-bee3-4308-92e2-2444bc9ef6b3'),
+', 'c0000002-0000-4000-8000-000000000002', 'M-KOPA', 'm-kopa', '', 'Remote, East Africa', 'remote', 'full_time', 'mid', 65000, 95000, 'USD', 'year', true, array['kotlin', 'android', 'jetpack-compose', 'mvvm', 'testing'], array['mobile', 'low-bandwidth', 'fintech'], 'https://m-kopa.example/careers', 'careers@m-kopa.example', 'published', '2026-09-22T13:09:01.303Z', '2026-11-12T13:09:01.303Z', 743, false, (select id from auth.users order by created_at asc limit 1)),
   ('d0000001-0000-4000-8000-000000000007', 'Data Scientist — Credit Risk Modelling', 'm-kopa-data-scientist-risk', '## About the role
 
 M-KOPA is hiring a data scientist to improve how we assess credit for customers who have no conventional credit history. The data is behavioural: repayment patterns, USSD interaction, device characteristics, and consistency of cash flow. The work is closer to applied risk than to research, and every model decision has to be explainable to a risk manager and defensible to a regulator.
@@ -580,7 +585,7 @@ Roughly 70% of M-KOPA''s customers have never held a bank account, so the produc
 Apply on the M-KOPA careers page or by email. This listing is published on Patakazi, an agent-readable job board, so you can also hand the structured listing to an assistant and get a shortlist instead of a wall of text.
 
 **M-KOPA** — Fintech · 1001 5000 · founded 2011 · Nairobi, Kenya
-', 'c0000002-0000-4000-8000-000000000002', 'M-KOPA', 'm-kopa', '', 'Nairobi, Kenya', 'hybrid', 'full_time', 'senior', 82000, 120000, 'USD', 'year', true, array['python', 'machine-learning', 'sql', 'statistics', 'pandas'], array['fintech', 'lending', 'responsible-ml'], 'https://m-kopa.example/careers', 'careers@m-kopa.example', 'published', '2026-09-17T07:12:40.400Z', '2026-10-28T07:12:40.400Z', 588, false, '0af97a37-bee3-4308-92e2-2444bc9ef6b3'),
+', 'c0000002-0000-4000-8000-000000000002', 'M-KOPA', 'm-kopa', '', 'Nairobi, Kenya', 'hybrid', 'full_time', 'senior', 82000, 120000, 'USD', 'year', true, array['python', 'machine-learning', 'sql', 'statistics', 'pandas'], array['fintech', 'lending', 'responsible-ml'], 'https://m-kopa.example/careers', 'careers@m-kopa.example', 'published', '2026-09-17T13:09:01.304Z', '2026-10-28T13:09:01.304Z', 588, false, (select id from auth.users order by created_at asc limit 1)),
   ('d0000001-0000-4000-8000-000000000008', 'Customer Operations Intern', 'm-kopa-customer-operations-intern', '## About the role
 
 This is a six-month paid internship on the customer operations team at M-KOPA, working directly with customers who are paying off a financed phone or a solar system and who sometimes need help at a difficult moment.
@@ -640,7 +645,7 @@ Roughly 70% of M-KOPA''s customers have never held a bank account, so the produc
 Apply on the M-KOPA careers page or by email. This listing is published on Patakazi, an agent-readable job board, so you can also hand the structured listing to an assistant and get a shortlist instead of a wall of text.
 
 **M-KOPA** — Fintech · 1001 5000 · founded 2011 · Nairobi, Kenya
-', 'c0000002-0000-4000-8000-000000000002', 'M-KOPA', 'm-kopa', '', 'Nairobi, Kenya', 'onsite', 'internship', 'internship', 12000, 18000, 'USD', 'year', true, array['customer-support', 'excel', 'communication'], array['early-career', 'mentorship', 'operations'], 'https://m-kopa.example/careers', 'careers@m-kopa.example', 'published', '2026-09-25T07:12:40.401Z', '2026-10-19T07:12:40.401Z', 1102, false, '0af97a37-bee3-4308-92e2-2444bc9ef6b3'),
+', 'c0000002-0000-4000-8000-000000000002', 'M-KOPA', 'm-kopa', '', 'Nairobi, Kenya', 'onsite', 'internship', 'internship', 12000, 18000, 'USD', 'year', true, array['customer-support', 'excel', 'communication'], array['early-career', 'mentorship', 'operations'], 'https://m-kopa.example/careers', 'careers@m-kopa.example', 'published', '2026-09-25T13:09:01.304Z', '2026-10-19T13:09:01.304Z', 1102, false, (select id from auth.users order by created_at asc limit 1)),
   ('d0000001-0000-4000-8000-000000000009', 'Senior Software Engineer — Logistics and Routing', 'twiga-senior-software-engineer-logistics', '## About the role
 
 Twiga Foods moves fresh produce from smallholder farmers to restaurants within hours of harvest. The constraint is physical: a route has to be driven, a truck has a load capacity, and a restaurant has a delivery window. Turning that into software is what this team does, and the person who joins it will own the routing surface that dispatchers rely on every morning.
@@ -701,7 +706,7 @@ The interesting part of the business is the last mile. Orders from restaurants a
 Apply on the Twiga Foods careers page or by email. This listing is published on Patakazi, an agent-readable job board, so you can also hand the structured listing to an assistant and get a shortlist instead of a wall of text.
 
 **Twiga Foods** — Agritech & Logistics · 501 1000 · founded 2014 · Nairobi, Kenya
-', 'c0000003-0000-4000-8000-000000000003', 'Twiga Foods', 'twiga-foods', '', 'Nairobi, Kenya', 'hybrid', 'full_time', 'senior', 75000, 110000, 'USD', 'year', true, array['typescript', 'node', 'postgresql', 'algorithms', 'vue'], array['logistics', 'optimisation', 'salary-transparent'], 'https://twiga-foods.example/careers', 'careers@twiga-foods.example', 'published', '2026-09-23T07:12:40.401Z', '2026-11-12T07:12:40.401Z', 967, true, '0af97a37-bee3-4308-92e2-2444bc9ef6b3'),
+', 'c0000003-0000-4000-8000-000000000003', 'Twiga Foods', 'twiga-foods', '', 'Nairobi, Kenya', 'hybrid', 'full_time', 'senior', 75000, 110000, 'USD', 'year', true, array['typescript', 'node', 'postgresql', 'algorithms', 'vue'], array['logistics', 'optimisation', 'salary-transparent'], 'https://twiga-foods.example/careers', 'careers@twiga-foods.example', 'published', '2026-09-23T13:09:01.304Z', '2026-11-12T13:09:01.304Z', 967, true, (select id from auth.users order by created_at asc limit 1)),
   ('d0000001-0000-4000-8000-000000000010', 'Field Operations Manager — Farmer Network', 'twiga-field-operations-manager', '## About the role
 
 Twiga Foods is looking for a field operations manager to lead the farmer network in Nakuru county. You will be the link between the agronomists and the software: you know what farmers will actually agree to, and you can turn that into a requirement the product team can build.
@@ -762,7 +767,7 @@ The interesting part of the business is the last mile. Orders from restaurants a
 Apply on the Twiga Foods careers page or by email. This listing is published on Patakazi, an agent-readable job board, so you can also hand the structured listing to an assistant and get a shortlist instead of a wall of text.
 
 **Twiga Foods** — Agritech & Logistics · 501 1000 · founded 2014 · Nairobi, Kenya
-', 'c0000003-0000-4000-8000-000000000003', 'Twiga Foods', 'twiga-foods', '', 'Nakuru, Kenya', 'onsite', 'full_time', 'mid', 42000, 60000, 'USD', 'year', true, array['operations', 'farmer-engagement', 'excel', 'logistics'], array['field-operations', 'early-career-leadership'], 'https://twiga-foods.example/careers', 'careers@twiga-foods.example', 'published', '2026-09-14T07:12:40.401Z', '2026-10-28T07:12:40.401Z', 402, false, '0af97a37-bee3-4308-92e2-2444bc9ef6b3'),
+', 'c0000003-0000-4000-8000-000000000003', 'Twiga Foods', 'twiga-foods', '', 'Nakuru, Kenya', 'onsite', 'full_time', 'mid', 42000, 60000, 'USD', 'year', true, array['operations', 'farmer-engagement', 'excel', 'logistics'], array['field-operations', 'early-career-leadership'], 'https://twiga-foods.example/careers', 'careers@twiga-foods.example', 'published', '2026-09-14T13:09:01.304Z', '2026-10-28T13:09:01.304Z', 402, false, (select id from auth.users order by created_at asc limit 1)),
   ('d0000001-0000-4000-8000-000000000011', 'QA Engineer — Mobile and Web', 'twiga-qa-engineer', '## About the role
 
 Twiga Foods is looking for a contract QA engineer to strengthen automated testing across our customer ordering flows and the internal tools our field teams rely on.
@@ -823,7 +828,7 @@ The interesting part of the business is the last mile. Orders from restaurants a
 Apply on the Twiga Foods careers page or by email. This listing is published on Patakazi, an agent-readable job board, so you can also hand the structured listing to an assistant and get a shortlist instead of a wall of text.
 
 **Twiga Foods** — Agritech & Logistics · 501 1000 · founded 2014 · Nairobi, Kenya
-', 'c0000003-0000-4000-8000-000000000003', 'Twiga Foods', 'twiga-foods', '', 'Nairobi, Kenya', 'remote', 'contract', 'mid', 9000, 13000, 'USD', 'year', false, array['testing', 'cypress', 'playwright', 'postman', 'api-testing'], array['contract', 'automation', 'quality'], 'https://twiga-foods.example/careers', 'careers@twiga-foods.example', 'published', '2026-09-20T07:12:40.401Z', '2026-11-07T07:12:40.401Z', 214, false, '0af97a37-bee3-4308-92e2-2444bc9ef6b3'),
+', 'c0000003-0000-4000-8000-000000000003', 'Twiga Foods', 'twiga-foods', '', 'Nairobi, Kenya', 'remote', 'contract', 'mid', 9000, 13000, 'USD', 'year', false, array['testing', 'cypress', 'playwright', 'postman', 'api-testing'], array['contract', 'automation', 'quality'], 'https://twiga-foods.example/careers', 'careers@twiga-foods.example', 'published', '2026-09-20T13:09:01.304Z', '2026-11-07T13:09:01.304Z', 214, false, (select id from auth.users order by created_at asc limit 1)),
   ('d0000001-0000-4000-8000-000000000012', 'Backend Engineer — Dispatch and Tracking', 'sendy-backend-engineer-dispatch', '## About the role
 
 Sendy''s dispatch engine assigns a job to a rider, and the tracking surface shows the customer where their parcel is. Both live or die on real-time behaviour, which is what this role is about.
@@ -884,7 +889,7 @@ Freight matching in a dense city like Nairobi is a routing problem with a lot of
 Apply on the Sendy careers page or by email. This listing is published on Patakazi, an agent-readable job board, so you can also hand the structured listing to an assistant and get a shortlist instead of a wall of text.
 
 **Sendy** — Logistics · 201 500 · founded 2015 · Nairobi, Kenya
-', 'c0000004-0000-4000-8000-000000000004', 'Sendy', 'sendy', '', 'Nairobi, Kenya', 'hybrid', 'full_time', 'mid', 68000, 98000, 'USD', 'year', true, array['typescript', 'node', 'postgresql', 'redis', 'websocket'], array['logistics', 'real-time', 'high-scale'], 'https://sendy.example/careers', 'careers@sendy.example', 'published', '2026-09-21T07:12:40.401Z', '2026-11-12T07:12:40.401Z', 846, false, '0af97a37-bee3-4308-92e2-2444bc9ef6b3'),
+', 'c0000004-0000-4000-8000-000000000004', 'Sendy', 'sendy', '', 'Nairobi, Kenya', 'hybrid', 'full_time', 'mid', 68000, 98000, 'USD', 'year', true, array['typescript', 'node', 'postgresql', 'redis', 'websocket'], array['logistics', 'real-time', 'high-scale'], 'https://sendy.example/careers', 'careers@sendy.example', 'published', '2026-09-21T13:09:01.304Z', '2026-11-12T13:09:01.304Z', 846, false, (select id from auth.users order by created_at asc limit 1)),
   ('d0000001-0000-4000-8000-000000000013', 'Product Designer — Rider and Customer Apps', 'sendy-product-designer', '## About the role
 
 Sendy is looking for a product designer who can work across two very different interfaces: a customer booking a delivery, and a rider on a motorcycle with one hand and a cracked screen.
@@ -945,7 +950,7 @@ Freight matching in a dense city like Nairobi is a routing problem with a lot of
 Apply on the Sendy careers page or by email. This listing is published on Patakazi, an agent-readable job board, so you can also hand the structured listing to an assistant and get a shortlist instead of a wall of text.
 
 **Sendy** — Logistics · 201 500 · founded 2015 · Nairobi, Kenya
-', 'c0000004-0000-4000-8000-000000000004', 'Sendy', 'sendy', '', 'Nairobi, Kenya', 'hybrid', 'full_time', 'senior', 72000, 105000, 'USD', 'year', true, array['figma', 'ux-design', 'design-systems', 'user-research', 'accessibility'], array['design', 'mobile-first', 'low-bandwidth'], 'https://sendy.example/careers', 'careers@sendy.example', 'published', '2026-09-15T07:12:40.401Z', '2026-10-28T07:12:40.401Z', 377, false, '0af97a37-bee3-4308-92e2-2444bc9ef6b3'),
+', 'c0000004-0000-4000-8000-000000000004', 'Sendy', 'sendy', '', 'Nairobi, Kenya', 'hybrid', 'full_time', 'senior', 72000, 105000, 'USD', 'year', true, array['figma', 'ux-design', 'design-systems', 'user-research', 'accessibility'], array['design', 'mobile-first', 'low-bandwidth'], 'https://sendy.example/careers', 'careers@sendy.example', 'published', '2026-09-15T13:09:01.304Z', '2026-10-28T13:09:01.304Z', 377, false, (select id from auth.users order by created_at asc limit 1)),
   ('d0000001-0000-4000-8000-000000000014', 'Growth Analyst', 'sendy-growth-analyst', '## About the role
 
 Sendy is hiring a part-time growth analyst to help the team understand what actually drives a first delivery, and what makes customers come back.
@@ -1005,7 +1010,7 @@ Freight matching in a dense city like Nairobi is a routing problem with a lot of
 Apply on the Sendy careers page or by email. This listing is published on Patakazi, an agent-readable job board, so you can also hand the structured listing to an assistant and get a shortlist instead of a wall of text.
 
 **Sendy** — Logistics · 201 500 · founded 2015 · Nairobi, Kenya
-', 'c0000004-0000-4000-8000-000000000004', 'Sendy', 'sendy', '', 'Remote, East Africa', 'remote', 'part_time', 'mid', 14000, 20000, 'USD', 'year', true, array['sql', 'analytics', 'experimentation', 'python'], array['part-time', 'analytics', 'growth'], 'https://sendy.example/careers', 'careers@sendy.example', 'published', '2026-09-09T07:12:40.401Z', '2026-11-27T07:12:40.401Z', 205, false, '0af97a37-bee3-4308-92e2-2444bc9ef6b3'),
+', 'c0000004-0000-4000-8000-000000000004', 'Sendy', 'sendy', '', 'Remote, East Africa', 'remote', 'part_time', 'mid', 14000, 20000, 'USD', 'year', true, array['sql', 'analytics', 'experimentation', 'python'], array['part-time', 'analytics', 'growth'], 'https://sendy.example/careers', 'careers@sendy.example', 'published', '2026-09-09T13:09:01.304Z', '2026-11-27T13:09:01.304Z', 205, false, (select id from auth.users order by created_at asc limit 1)),
   ('d0000001-0000-4000-8000-000000000015', 'Platform Engineer — Kubernetes and Infrastructure', 'cellulant-platform-engineer', '## About the role
 
 Cellulant''s platform team builds the infrastructure that banks and mobile money operators run payments on. That means multi-region, audited, and extremely boring in the best sense. When it is not boring, it is an incident that involves a central bank.
@@ -1066,7 +1071,7 @@ Its customers are regulated institutions, so the engineering bar is different fr
 Apply on the Cellulant careers page or by email. This listing is published on Patakazi, an agent-readable job board, so you can also hand the structured listing to an assistant and get a shortlist instead of a wall of text.
 
 **Cellulant** — Payments · 501 1000 · founded 2004 · Lagos, Nigeria and Nairobi, Kenya
-', 'c0000005-0000-4000-8000-000000000005', 'Cellulant', 'cellulant', '', 'Nairobi, Kenya', 'hybrid', 'full_time', 'senior', 85000, 125000, 'USD', 'year', true, array['kubernetes', 'terraform', 'aws', 'observability', 'go'], array['platform', 'reliability', 'regulated'], 'https://cellulant.example/careers', 'careers@cellulant.example', 'published', '2026-09-18T07:12:40.401Z', '2026-11-12T07:12:40.401Z', 521, false, '0af97a37-bee3-4308-92e2-2444bc9ef6b3'),
+', 'c0000005-0000-4000-8000-000000000005', 'Cellulant', 'cellulant', '', 'Nairobi, Kenya', 'hybrid', 'full_time', 'senior', 85000, 125000, 'USD', 'year', true, array['kubernetes', 'terraform', 'aws', 'observability', 'go'], array['platform', 'reliability', 'regulated'], 'https://cellulant.example/careers', 'careers@cellulant.example', 'published', '2026-09-18T13:09:01.304Z', '2026-11-12T13:09:01.304Z', 521, false, (select id from auth.users order by created_at asc limit 1)),
   ('d0000001-0000-4000-8000-000000000016', 'Technical Writer — Payments APIs', 'cellulant-technical-writer', '## About the role
 
 Cellulant is looking for a technical writer to own the documentation for its collections and payouts APIs. Our integration partners are banks and fintechs whose engineers need to implement a payment flow correctly the first time, and our current docs do not always make that easy.
@@ -1127,7 +1132,7 @@ Its customers are regulated institutions, so the engineering bar is different fr
 Apply on the Cellulant careers page or by email. This listing is published on Patakazi, an agent-readable job board, so you can also hand the structured listing to an assistant and get a shortlist instead of a wall of text.
 
 **Cellulant** — Payments · 501 1000 · founded 2004 · Lagos, Nigeria and Nairobi, Kenya
-', 'c0000005-0000-4000-8000-000000000005', 'Cellulant', 'cellulant', '', 'Remote, Africa', 'remote', 'contract', 'mid', 8000, 12000, 'USD', 'year', true, array['technical-writing', 'api-documentation', 'openapi', 'markdown'], array['contract', 'developer-experience', 'remote-first'], 'https://cellulant.example/careers', 'careers@cellulant.example', 'published', '2026-09-10T07:12:40.401Z', '2026-11-17T07:12:40.401Z', 168, false, '0af97a37-bee3-4308-92e2-2444bc9ef6b3'),
+', 'c0000005-0000-4000-8000-000000000005', 'Cellulant', 'cellulant', '', 'Remote, Africa', 'remote', 'contract', 'mid', 8000, 12000, 'USD', 'year', true, array['technical-writing', 'api-documentation', 'openapi', 'markdown'], array['contract', 'developer-experience', 'remote-first'], 'https://cellulant.example/careers', 'careers@cellulant.example', 'published', '2026-09-10T13:09:01.304Z', '2026-11-17T13:09:01.304Z', 168, false, (select id from auth.users order by created_at asc limit 1)),
   ('d0000001-0000-4000-8000-000000000017', 'Full-Stack Developer — Community Platform', 'ihub-full-stack-developer', '## About the role
 
 iHub Nairobi is hiring a full-stack developer to work on the platform that runs our community: event listings, programme applications, resident directory, and the tools our mentors use.
@@ -1188,7 +1193,7 @@ Because it operates more like a community than a corporation, the work is wide: 
 Apply on the iHub Nairobi careers page or by email. This listing is published on Patakazi, an agent-readable job board, so you can also hand the structured listing to an assistant and get a shortlist instead of a wall of text.
 
 **iHub Nairobi** — Technology Incubator · 11 50 · founded 2010 · Nairobi, Kenya
-', 'c0000006-0000-4000-8000-000000000006', 'iHub Nairobi', 'ihub-nairobi', '', 'Nairobi, Kenya', 'onsite', 'full_time', 'junior', 38000, 52000, 'USD', 'year', true, array['typescript', 'vue', 'nuxt', 'postgresql', 'css'], array['early-career', 'breadth', 'mentorship'], 'https://ihub.co.ke/careers', 'careers@ihub-nairobi.example', 'published', '2026-09-22T07:12:40.401Z', '2026-11-07T07:12:40.401Z', 336, false, '0af97a37-bee3-4308-92e2-2444bc9ef6b3'),
+', 'c0000006-0000-4000-8000-000000000006', 'iHub Nairobi', 'ihub-nairobi', '', 'Nairobi, Kenya', 'onsite', 'full_time', 'junior', 38000, 52000, 'USD', 'year', true, array['typescript', 'vue', 'nuxt', 'postgresql', 'css'], array['early-career', 'breadth', 'mentorship'], 'https://ihub.co.ke/careers', 'careers@ihub-nairobi.example', 'published', '2026-09-22T13:09:01.304Z', '2026-11-07T13:09:01.304Z', 336, false, (select id from auth.users order by created_at asc limit 1)),
   ('d0000001-0000-4000-8000-000000000018', 'Community Programme Intern', 'ihub-community-programme-intern', '## About the role
 
 iHub Nairobi is looking for a part-time community programme intern to help run our training and mentorship programmes. You will coordinate sessions, support mentors, and keep the programme documentation current.
@@ -1248,7 +1253,7 @@ Because it operates more like a community than a corporation, the work is wide: 
 Apply on the iHub Nairobi careers page or by email. This listing is published on Patakazi, an agent-readable job board, so you can also hand the structured listing to an assistant and get a shortlist instead of a wall of text.
 
 **iHub Nairobi** — Technology Incubator · 11 50 · founded 2010 · Nairobi, Kenya
-', 'c0000006-0000-4000-8000-000000000006', 'iHub Nairobi', 'ihub-nairobi', '', 'Nairobi, Kenya', 'onsite', 'part_time', 'internship', 8000, 12000, 'USD', 'year', false, array['communication', 'events', 'community', 'documentation'], array['early-career', 'community', 'part-time'], 'https://ihub.co.ke/careers', 'careers@ihub-nairobi.example', 'published', '2026-09-06T07:12:40.401Z', '2026-10-23T07:12:40.401Z', 129, false, '0af97a37-bee3-4308-92e2-2444bc9ef6b3')
+', 'c0000006-0000-4000-8000-000000000006', 'iHub Nairobi', 'ihub-nairobi', '', 'Nairobi, Kenya', 'onsite', 'part_time', 'internship', 8000, 12000, 'USD', 'year', false, array['communication', 'events', 'community', 'documentation'], array['early-career', 'community', 'part-time'], 'https://ihub.co.ke/careers', 'careers@ihub-nairobi.example', 'published', '2026-09-06T13:09:01.304Z', '2026-10-23T13:09:01.304Z', 129, false, (select id from auth.users order by created_at asc limit 1))
 on conflict (slug) do update set
   title = excluded.title,
   description = excluded.description,
@@ -1302,7 +1307,7 @@ values (
   now() - interval '30 days',
   2814,
   false,
-  '0af97a37-bee3-4308-92e2-2444bc9ef6b3'
+  (select id from auth.users order by created_at asc limit 1)
 )
 on conflict (slug) do update set status = excluded.status, description = excluded.description;
 
@@ -1335,7 +1340,7 @@ values (
   null,
   0,
   false,
-  '0af97a37-bee3-4308-92e2-2444bc9ef6b3'
+  (select id from auth.users order by created_at asc limit 1)
 )
 on conflict (slug) do update set title = excluded.title, description = excluded.description, status = excluded.status;
 

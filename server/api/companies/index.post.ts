@@ -1,8 +1,17 @@
 import { createCompanySchema } from '#shared/schemas'
+import { requireAdmin } from '../../services/authorization.service'
 import { useCompanyService } from '../../services/company.service'
 
-/** POST /api/companies — claim or create a company profile. */
+/**
+ * POST /api/companies — create a company profile.
+ *
+ * Admin only, for the same reason as job creation: employers cannot self-claim
+ * a profile, because an unclaimed company is not claimable by whoever finds it
+ * first.
+ */
 export default defineEventHandler(async (event) => {
+  await requireAdmin(event)
+
   const parsed = createCompanySchema.safeParse(await readBody(event))
   if (!parsed.success) {
     throw createError({
