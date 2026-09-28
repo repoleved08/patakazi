@@ -35,16 +35,16 @@ export type Database = {
           id: string
           industry: string
           location: string
-          services: string
-          working_hours: string
           logo_id: string
           name: string
           owner_id: string | null
+          services: string
           size: CompanySize | ''
           slug: string
           updated_at: string
           verified: boolean
           website: string
+          working_hours: string
         }
         Insert: {
           created_at?: string
@@ -54,6 +54,8 @@ export type Database = {
           industry?: string
           location?: string
           logo_id?: string
+          services?: string
+          working_hours?: string
           name: string
           owner_id?: string | null
           size?: CompanySize | ''
@@ -70,6 +72,8 @@ export type Database = {
           industry?: string
           location?: string
           logo_id?: string
+          services?: string
+          working_hours?: string
           name?: string
           owner_id?: string | null
           size?: CompanySize | ''
@@ -274,6 +278,8 @@ export type Database = {
           open_to_work: boolean
           portfolio_url: string
           resume_id: string
+          role: string
+          is_active: boolean
           skills: string[]
           summary: string
           updated_at: string
@@ -289,6 +295,8 @@ export type Database = {
           open_to_work?: boolean
           portfolio_url?: string
           resume_id?: string
+          role?: string
+          is_active?: boolean
           skills?: string[]
           summary?: string
           updated_at?: string
@@ -304,6 +312,8 @@ export type Database = {
           open_to_work?: boolean
           portfolio_url?: string
           resume_id?: string
+          role?: string
+          is_active?: boolean
           skills?: string[]
           summary?: string
           updated_at?: string

@@ -108,7 +108,9 @@ export const createCompanySchema = z.object({
   industry: z.string().trim().max(80).default(''),
   size: z.enum(COMPANY_SIZES).or(z.literal('')).default(''),
   founded: z.coerce.number().int().min(1800).max(2100).or(z.literal(0)).default(0),
-  location: z.string().trim().max(120).default('')
+  location: z.string().trim().max(120).default(''),
+  services: z.string().trim().max(5000).default(''),
+  workingHours: z.string().trim().max(500).default('')
 })
 
 export type CreateCompanyInput = z.infer<typeof createCompanySchema>
@@ -151,8 +153,6 @@ export const updateProfileSchema = z.object({
   headline: z.string().trim().max(160).optional(),
   summary: z.string().trim().max(5_000).optional(),
   location: z.string().trim().max(120).optional(),
-  services: z.string().trim().max(5000).default('').optional(),
-  workingHours: z.string().trim().max(500).default('').optional(),
   skills: z.array(z.string().trim().min(1).max(40)).max(40).optional(),
   // A storage object key in the private `resumes` bucket, set by the upload
   // flow rather than typed by hand.

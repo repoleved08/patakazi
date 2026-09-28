@@ -42,7 +42,9 @@ export function useCompanyMutations() {
   }
 
   async function remove(id: string) {
-    await $fetch(`/api/companies/${id}`, { method: 'DELETE' })
+    // `as never` matches useJobs: the generated route map types a dynamic path
+    // by its GET/PATCH handlers, so DELETE has to be widened.
+    await $fetch(`/api/companies/${id}`, { method: 'DELETE' as never })
   }
 
   return { update, remove }

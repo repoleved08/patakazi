@@ -5,6 +5,7 @@ import type {
   JobStatus,
   SalaryPeriod,
   SeniorityLevel,
+  UserRole,
   WorkplaceType
 } from './job'
 
@@ -96,4 +97,7 @@ export interface ProfileRow extends BaseRow {
   portfolio_url: string
   linkedin_url: string
   open_to_work: boolean
+  /** Access level, mirrored from `auth.users.user_metadata.role`. */
+  role: UserRole
+  is_active: boolean
 }

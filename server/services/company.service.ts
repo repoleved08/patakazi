@@ -77,6 +77,8 @@ export class CompanyService {
       size: input.size,
       founded: input.founded,
       location: input.location,
+      services: input.services,
+      working_hours: input.workingHours,
       logo_id: '',
       owner_id: context.userId,
       verified: false
@@ -104,6 +106,8 @@ export class CompanyService {
     if (input.size !== undefined) patch.size = input.size as CompanyRow['size']
     if (input.founded !== undefined) patch.founded = input.founded
     if (input.location !== undefined) patch.location = input.location
+    if (input.services !== undefined) patch.services = input.services
+    if (input.workingHours !== undefined) patch.working_hours = input.workingHours
 
     return toCompany(await this.companies.update(id, patch))
   }

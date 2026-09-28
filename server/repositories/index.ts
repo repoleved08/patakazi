@@ -231,9 +231,17 @@ export class JobRepository {
     return this.countBy({ statuses, workplaceTypes })
   }
 
+  /**
+   * Published-job count since a timestamp.
+   *
+   * Filters on `published_at`, not `created_at`: "added this week" means the
+   * week a role went live, so a draft written last month and published today
+   * counts today. This is also the column the
+   * `jobs_status_published_at_idx` index leads with.
+   */
   async countPublishedSince(since: string): Promise<number> {
     const base = this.supabase.from(TABLES.jobs).select('*', { count: 'exact', head: true })
-    const { count, error } = await base.eq('status', 'published').gte('created_at', since)
+    const { count, error } = await base.eq('status', 'published').gte('published_at', since)
     throwIfError(error)
     return count ?? 0
   }

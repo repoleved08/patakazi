@@ -49,6 +49,8 @@ export function toCompany(row: CompanyRow, openRoles = 0): Company {
     industry: str(row.industry),
     size: row.size ?? '',
     founded: num(row.founded),
+    services: str(row.services),
+    workingHours: str(row.working_hours),
     openRoles
   }
 }

@@ -136,6 +136,7 @@ export function useAuth() {
     user: readonly(authUser),
     isAuthenticated: computed(() => authUser.value !== null),
     isEmployer: computed(() => authUser.value?.role === 'employer' || authUser.value?.role === 'admin'),
+    isAdmin: computed(() => authUser.value?.role === 'admin'),
     isLoading: readonly(isLoading),
     refresh,
     sendMagicLink,

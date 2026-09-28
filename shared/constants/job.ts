@@ -60,3 +60,10 @@ export type CompanySize = typeof COMPANY_SIZES[number]
 
 export const JOB_SORT_FIELDS = ['relevance', 'newest', 'salary'] as const
 export type JobSortField = typeof JOB_SORT_FIELDS[number]
+
+/**
+ * Platform access levels. `admin` is global (moderation, manual entry);
+ * `employer` is the company-owner role the ownership checks use.
+ */
+export const USER_ROLES = ['employer', 'admin'] as const
+export type UserRole = typeof USER_ROLES[number]

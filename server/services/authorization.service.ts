@@ -58,3 +58,35 @@ export async function requireJobAccess(event: H3Event, job: { created_by: string
 
   throw createError({ statusCode: 403, statusMessage: 'You do not manage this listing' })
 }
+
+/**
+ * Whether a user holds the platform admin role.
+ *
+ * Two sources are consulted, because either can be set independently: the
+ * `profiles.role` column (editable by us, and what the dashboard reads) and
+ * `auth.users.user_metadata.role` (settable only through the Auth admin API).
+ * Accepting either means an operator can grant access through the dashboard
+ * without touching SQL, and vice versa.
+ */
+export async function isAdmin(event: H3Event, userId: string): Promise<boolean> {
+  const supabase = useSupabaseServer(event)
+  const { data } = await supabase
+    .from(TABLES.profiles)
+    .select('role, is_active')
+    .eq('user_id', userId)
+    .maybeSingle()
+
+  if (data?.role === 'admin') return data.is_active !== false
+
+  const user = await supabase.auth.admin.getUserById(userId)
+  return (user.data?.user?.user_metadata?.['role'] as string | undefined) === 'admin'
+}
+
+/** Throw 403 unless the signed-in user is a platform admin. */
+export async function requireAdmin(event: H3Event): Promise<AuthContext> {
+  const context = await requireAuth(await resolveAuthContext(event))
+  if (!await isAdmin(event, context.userId)) {
+    throw createError({ statusCode: 403, statusMessage: 'Admin access required' })
+  }
+  return context
+}

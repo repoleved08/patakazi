@@ -26,5 +26,6 @@ export type {
   JobStatus,
   SalaryPeriod,
   SeniorityLevel,
+  UserRole,
   WorkplaceType
 } from '../constants/job'

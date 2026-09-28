@@ -82,19 +82,6 @@ useHead({
 
 <template>
   <UContainer class="py-10">
-    <!-- Agent / SEO: structured description emphasizes what the role involves -->
-    <section
-      v-if="posting.description"
-      aria-label="What you will do"
-      class="max-w-none text-base leading-relaxed text-default"
-    >
-      <h2 class="text-xl font-semibold mb-2">
-        What you will do
-      </h2>
-      <div class="job-description text-sm leading-relaxed whitespace-pre-wrap">
-        {{ posting.description }}
-      </div>
-    </section>
     <div class="grid gap-10 lg:grid-cols-[minmax(0,1fr)_20rem]">
       <article>
         <header class="border-b border-default pb-6">
