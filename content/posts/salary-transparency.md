@@ -3,6 +3,7 @@ title: "Why we publish salary ranges on every listing"
 description: "A defence of showing the band before you apply, and what changes when you do."
 date: "2026-01-14"
 author: "Editorial team"
+image: "https://images.unsplash.com/photo-1600880292203-757bb62b4baf"
 tags:
   - compensation
   - transparency

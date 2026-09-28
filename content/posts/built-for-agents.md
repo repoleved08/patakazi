@@ -3,6 +3,7 @@ title: "This job board is built to be read by AI agents"
 description: "We publish llms.txt, a markdown version of every page, and an MCP server, on purpose."
 date: "2026-02-02"
 author: "Editorial team"
+image: "https://images.unsplash.com/photo-1451187580459-43490279c0fa"
 tags:
   - engineering
   - ai
